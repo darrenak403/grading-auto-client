@@ -1,0 +1,4 @@
+- avoid unnecessary re-renders
+- avoid layout shift
+- images optimized
+- animation optimized

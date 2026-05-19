@@ -1,0 +1,305 @@
+{
+  "new-ui": {
+    "command": "/new-ui",
+    "skills": [
+      "frontend-design",
+      "vercel-react-best-practices",
+      "shadcn",
+      "emil-design-eng"
+    ],
+    "audit": [
+      "web-quality-audit",
+      "wcag-audit-patterns"
+    ],
+    "prompts": [
+      "executor",
+      "auditor",
+      "final-output"
+    ],
+    "checklists": [
+      "ui",
+      "react",
+      "accessibility",
+      "production"
+    ]
+  },
+
+  "redesign-ui": {
+    "command": "/redesign-ui",
+    "skills": [
+      "frontend-design",
+      "emil-design-eng",
+      "web-quality-audit"
+    ],
+    "audit": [
+      "web-quality-audit",
+      "wcag-audit-patterns"
+    ],
+    "prompts": [
+      "executor",
+      "reviewer",
+      "auditor"
+    ],
+    "checklists": [
+      "ui",
+      "animation",
+      "production"
+    ]
+  },
+
+  "layout-polish": {
+    "command": "/layout-polish",
+    "skills": [
+      "frontend-design",
+      "emil-design-eng",
+      "baseline-ui",
+      "web-quality-audit"
+    ],
+    "audit": [
+      "web-quality-audit"
+    ],
+    "prompts": [
+      "executor",
+      "reviewer",
+      "auditor"
+    ],
+    "checklists": [
+      "ui",
+      "accessibility",
+      "production"
+    ]
+  },
+
+  "nextjs-architecture": {
+    "command": "/nextjs-architecture",
+    "skills": [
+      "frontend-ui-engineering",
+      "vercel-react-best-practices",
+      "web-quality-audit"
+    ],
+    "audit": [
+      "web-quality-audit"
+    ],
+    "prompts": [
+      "executor",
+      "reviewer"
+    ],
+    "checklists": [
+      "nextjs",
+      "performance",
+      "production"
+    ]
+  },
+
+  "project-setup": {
+    "command": "/project-setup",
+    "skills": [
+      "frontend-ui-engineering",
+      "vercel-react-best-practices",
+      "web-quality-audit"
+    ],
+    "architectureDocs": [
+      "nextjs-full-setup",
+      "api-layer",
+      "query-setup",
+      "auth-rbac",
+      "project-structure",
+      "coding-conventions"
+    ],
+    "prompts": [
+      "executor"
+    ],
+    "checklists": [
+      "nextjs",
+      "react"
+    ]
+  },
+
+  "component-system": {
+    "command": "/component-system",
+    "skills": [
+      "shadcn",
+      "baseline-ui",
+      "frontend-design"
+    ],
+    "audit": [
+      "web-quality-audit",
+      "wcag-audit-patterns"
+    ],
+    "prompts": [
+      "executor",
+      "reviewer"
+    ],
+    "checklists": [
+      "ui",
+      "react",
+      "accessibility"
+    ]
+  },
+
+  "animation-polish": {
+    "command": "/animation-polish",
+    "skills": [
+      "emil-design-eng",
+      "transitions-dev",
+      "fixing-motion-performance"
+    ],
+    "audit": [
+      "web-quality-audit"
+    ],
+    "prompts": [
+      "executor",
+      "auditor"
+    ],
+    "checklists": [
+      "animation",
+      "performance"
+    ]
+  },
+
+  "accessibility-audit": {
+    "command": "/accessibility-audit",
+    "skills": [
+      "wcag-audit-patterns",
+      "fixing-accessibility"
+    ],
+    "audit": [
+      "wcag-audit-patterns"
+    ],
+    "prompts": [
+      "auditor"
+    ],
+    "checklists": [
+      "accessibility"
+    ]
+  },
+
+  "production-audit": {
+    "command": "/production-audit",
+    "skill": "production-audit",
+    "skills": [
+      "web-quality-audit",
+      "wcag-audit-patterns",
+      "emil-design-eng"
+    ],
+    "audit": [],
+    "prompts": [
+      "auditor",
+      "reviewer",
+      "final-output"
+    ],
+    "checklists": [
+      "ui",
+      "nextjs",
+      "react",
+      "animation",
+      "accessibility",
+      "performance",
+      "production"
+    ]
+  },
+
+  "pre-release": {
+    "command": "/pre-release",
+    "skill": "pre-release",
+    "skills": [
+      "web-quality-audit",
+      "wcag-audit-patterns",
+      "fixing-accessibility",
+      "fixing-metadata",
+      "react-doctor",
+      "fixing-motion-performance",
+      "emil-design-eng"
+    ],
+    "audit": [
+      "web-quality-audit",
+      "wcag-audit-patterns"
+    ],
+    "prompts": [
+      "reviewer",
+      "auditor",
+      "final-output"
+    ],
+    "checklists": [
+      "pre-release",
+      "performance",
+      "accessibility",
+      "production",
+      "nextjs",
+      "ui"
+    ]
+  },
+
+  "fix-performance": {
+    "command": "/fix-performance",
+    "skills": [
+      "react-doctor",
+      "fixing-motion-performance",
+      "web-quality-audit"
+    ],
+    "audit": [
+      "web-quality-audit"
+    ],
+    "prompts": [
+      "reviewer",
+      "auditor"
+    ],
+    "checklists": [
+      "performance",
+      "nextjs"
+    ]
+  },
+
+  "seo-metadata": {
+    "command": "/seo-metadata",
+    "skills": [
+      "fixing-metadata"
+    ],
+    "audit": [
+      "web-quality-audit"
+    ],
+    "prompts": [
+      "reviewer"
+    ],
+    "checklists": [
+      "nextjs",
+      "production"
+    ]
+  },
+
+  "harden-ui": {
+    "command": "/harden-ui",
+    "skills": [
+      "web-quality-audit",
+      "wcag-audit-patterns"
+    ],
+    "audit": [
+      "web-quality-audit"
+    ],
+    "prompts": [
+      "reviewer",
+      "auditor"
+    ],
+    "checklists": [
+      "ui",
+      "accessibility",
+      "production"
+    ]
+  },
+
+  "use-snippet": {
+    "command": "/use-snippet",
+    "skills": [],
+    "snippets": [
+      "fetch-service",
+      "query-hook",
+      "mutation-hook",
+      "page-shell",
+      "empty-state",
+      "confirm-dialog"
+    ],
+    "prompts": [
+      "executor"
+    ]
+  }
+}

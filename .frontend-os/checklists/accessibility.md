@@ -1,0 +1,5 @@
+- keyboard navigation works
+- focus visible
+- aria-label exists
+- dialog traps focus
+- contrast sufficient

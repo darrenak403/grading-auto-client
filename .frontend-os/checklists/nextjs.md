@@ -1,0 +1,5 @@
+- correct App Router structure
+- Server Components by default
+- metadata configured
+- route structure clean
+- cache strategy clear
