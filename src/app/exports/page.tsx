@@ -1,13 +1,13 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
+import { motion } from "framer-motion";
 import { api } from "@/lib";
 import type { ExportJob } from "@/types";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Table } from "@/components/ui/Table";
+import { TableSkeleton } from "@/components/ui";
 
 export default function ExportsPage() {
   const [jobs, setJobs] = React.useState<ExportJob[]>([]);
@@ -93,13 +93,6 @@ export default function ExportsPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div style={{ padding: "80px 24px" }}>
-        <LoadingSpinner fullPage label="Loading exports..." />
-      </div>
-    );
-  }
 
   return (
     <div style={{ padding: "40px 24px", maxWidth: "1200px", margin: "0 auto" }}>
@@ -156,7 +149,9 @@ export default function ExportsPage() {
         </div>
       )}
 
-      {jobs.length === 0 ? (
+      {loading ? (
+        <TableSkeleton rows={5} columns={5} />
+      ) : jobs.length === 0 ? (
         <EmptyState
           title="No export jobs"
           description="Create exports from assignment or exam session pages."
@@ -226,9 +221,12 @@ export default function ExportsPage() {
               header: "",
               render: (j) =>
                 j.status === "Done" ? (
-                  <button
+                  <motion.button
                     onClick={() => handleDownload(j)}
                     disabled={downloading === j.id}
+                    whileHover={downloading === j.id ? {} : { scale: 1.05, backgroundColor: "#e04500", borderColor: "#e04500" }}
+                    whileTap={downloading === j.id ? {} : { scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 15 }}
                     style={{
                       fontFamily: "Inter, Arial, sans-serif",
                       fontSize: "0.8125rem",
@@ -243,7 +241,7 @@ export default function ExportsPage() {
                     }}
                   >
                     {downloading === j.id ? "..." : "Download"}
-                  </button>
+                  </motion.button>
                 ) : (
                   <span style={{ color: "#939084", fontSize: "0.8125rem" }}>-</span>
                 ),

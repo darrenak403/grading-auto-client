@@ -4,9 +4,11 @@ import * as React from "react";
 import Link from "next/link";
 import { api } from "@/lib";
 import type { ExamSession, AssignmentSummary } from "@/types";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { DashboardSkeleton } from "@/components/ui";
+import { motion } from "framer-motion";
+
+const MotionLink = motion(Link);
 
 interface DashboardStats {
   totalSessions: number;
@@ -50,11 +52,7 @@ export default function DashboardPage() {
   };
 
   if (loading) {
-    return (
-      <div style={{ padding: "80px 24px" }}>
-        <LoadingSpinner fullPage label="Loading dashboard..." />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (error) {
@@ -117,12 +115,18 @@ export default function DashboardPage() {
         }}
         className="stats-grid"
       >
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          whileHover={{ y: -4, borderColor: "#ff4f00", boxShadow: "0 12px 20px -8px rgba(32, 21, 21, 0.08)" }}
           style={{
             backgroundColor: "#fffefb",
             border: "1px solid #c5c0b1",
             borderRadius: "5px",
             padding: "32px",
+            cursor: "pointer",
+            transition: "border-color 0.15s ease",
           }}
         >
           <p
@@ -163,14 +167,20 @@ export default function DashboardPage() {
           >
             View all &rarr;
           </Link>
-        </div>
+        </motion.div>
 
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.08, ease: "easeOut" }}
+          whileHover={{ y: -4, borderColor: "#ff4f00", boxShadow: "0 12px 20px -8px rgba(32, 21, 21, 0.08)" }}
           style={{
             backgroundColor: "#fffefb",
             border: "1px solid #c5c0b1",
             borderRadius: "5px",
             padding: "32px",
+            cursor: "pointer",
+            transition: "border-color 0.15s ease",
           }}
         >
           <p
@@ -211,7 +221,7 @@ export default function DashboardPage() {
           >
             View all &rarr;
           </Link>
-        </div>
+        </motion.div>
       </div>
 
       {/* Quick Actions */}
@@ -223,8 +233,10 @@ export default function DashboardPage() {
           flexWrap: "wrap",
         }}
       >
-        <Link
+        <MotionLink
           href="/exam-sessions/create"
+          whileHover={{ y: -1, scale: 1.01, backgroundColor: "#e04500" }}
+          whileTap={{ scale: 0.97 }}
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -238,13 +250,15 @@ export default function DashboardPage() {
             border: "1px solid #ff4f00",
             borderRadius: "4px",
             textDecoration: "none",
-            transition: "background-color 0.15s ease",
+            transition: "border-color 0.15s ease",
           }}
         >
           + New Exam Session
-        </Link>
-        <Link
+        </MotionLink>
+        <MotionLink
           href="/submissions"
+          whileHover={{ y: -1, scale: 1.01 }}
+          whileTap={{ scale: 0.97 }}
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -258,13 +272,15 @@ export default function DashboardPage() {
             border: "1px solid #c5c0b1",
             borderRadius: "8px",
             textDecoration: "none",
-            transition: "all 0.15s ease",
+            transition: "background-color 0.15s ease",
           }}
         >
           View Submissions
-        </Link>
-        <Link
+        </MotionLink>
+        <MotionLink
           href="/exports"
+          whileHover={{ y: -1, scale: 1.01 }}
+          whileTap={{ scale: 0.97 }}
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -278,11 +294,11 @@ export default function DashboardPage() {
             border: "1px solid #c5c0b1",
             borderRadius: "8px",
             textDecoration: "none",
-            transition: "all 0.15s ease",
+            transition: "background-color 0.15s ease",
           }}
         >
           Export Results
-        </Link>
+        </MotionLink>
       </div>
 
       {/* Recent Exam Sessions */}
@@ -329,10 +345,15 @@ export default function DashboardPage() {
               gap: "16px",
             }}
           >
-            {stats.recentSessions.map((session) => (
-              <Link
+            {stats.recentSessions.map((session, index) => (
+              <MotionLink
                 key={session.id}
                 href={`/exam-sessions/${session.id}`}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.12 + index * 0.06, ease: "easeOut" }}
+                whileHover={{ y: -4, borderColor: "#ff4f00", boxShadow: "0 12px 20px -8px rgba(32, 21, 21, 0.08)" }}
+                whileTap={{ scale: 0.99 }}
                 style={{
                   display: "block",
                   backgroundColor: "#fffefb",
@@ -341,12 +362,6 @@ export default function DashboardPage() {
                   padding: "20px",
                   textDecoration: "none",
                   transition: "border-color 0.15s ease",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = "#b5b2aa";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = "#c5c0b1";
                 }}
               >
                 <div
@@ -389,7 +404,7 @@ export default function DashboardPage() {
                     year: "numeric",
                   })}
                 </div>
-              </Link>
+              </MotionLink>
             ))}
           </div>
         ) : (

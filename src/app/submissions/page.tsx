@@ -4,9 +4,12 @@ import * as React from "react";
 import Link from "next/link";
 import { api } from "@/lib";
 import type { Submission } from "@/types";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { TableSkeleton } from "@/components/ui";
+import { motion } from "framer-motion";
+
+const MotionLink = motion(Link);
 
 export default function SubmissionsPage() {
   const [submissions, setSubmissions] = React.useState<Submission[]>([]);
@@ -81,13 +84,6 @@ export default function SubmissionsPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div style={{ padding: "80px 24px" }}>
-        <LoadingSpinner fullPage label="Loading submissions..." />
-      </div>
-    );
-  }
 
   return (
     <div style={{ padding: "40px 24px", maxWidth: "1200px", margin: "0 auto" }}>
@@ -175,7 +171,9 @@ export default function SubmissionsPage() {
         </select>
       </div>
 
-      {submissions.length === 0 ? (
+      {loading ? (
+        <TableSkeleton rows={5} columns={7} />
+      ) : submissions.length === 0 ? (
         <EmptyState
           title="No submissions"
           description="Upload submissions from an assignment's submissions tab."
@@ -293,8 +291,10 @@ export default function SubmissionsPage() {
                   </td>
                   <td style={{ padding: "12px 16px" }}>
                     <div style={{ display: "flex", gap: "8px" }}>
-                      <Link
+                      <MotionLink
                         href={`/submissions/${s.id}`}
+                        whileHover={{ scale: 1.04 }}
+                        whileTap={{ scale: 0.95 }}
                         style={{
                           padding: "4px 10px",
                           fontSize: "0.8125rem",
@@ -307,9 +307,11 @@ export default function SubmissionsPage() {
                         }}
                       >
                         View
-                      </Link>
-                      <button
+                      </MotionLink>
+                      <motion.button
                         onClick={() => handleDelete(s.id)}
+                        whileHover={{ scale: 1.04 }}
+                        whileTap={{ scale: 0.95 }}
                         style={{
                           padding: "4px 10px",
                           fontSize: "0.8125rem",
@@ -322,7 +324,7 @@ export default function SubmissionsPage() {
                         }}
                       >
                         Delete
-                      </button>
+                      </motion.button>
                     </div>
                   </td>
                 </tr>

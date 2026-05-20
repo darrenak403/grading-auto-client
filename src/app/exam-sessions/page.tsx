@@ -4,9 +4,12 @@ import * as React from "react";
 import Link from "next/link";
 import { api } from "@/lib";
 import type { ExamSession } from "@/types";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Table } from "@/components/ui/Table";
+import { TableSkeleton } from "@/components/ui";
+import { motion } from "framer-motion";
+
+const MotionLink = motion(Link);
 
 export default function ExamSessionsPage() {
   const [sessions, setSessions] = React.useState<ExamSession[]>([]);
@@ -51,13 +54,6 @@ export default function ExamSessionsPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div style={{ padding: "80px 24px" }}>
-        <LoadingSpinner fullPage label="Loading exam sessions..." />
-      </div>
-    );
-  }
 
   return (
     <div style={{ padding: "40px 24px", maxWidth: "1200px", margin: "0 auto" }}>
@@ -99,8 +95,10 @@ export default function ExamSessionsPage() {
             Exam Sessions
           </h1>
         </div>
-        <Link
+        <MotionLink
           href="/exam-sessions/create"
+          whileHover={{ y: -1, scale: 1.01, backgroundColor: "#e04500" }}
+          whileTap={{ scale: 0.97 }}
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -113,11 +111,11 @@ export default function ExamSessionsPage() {
             border: "1px solid #ff4f00",
             borderRadius: "4px",
             textDecoration: "none",
-            transition: "background-color 0.15s ease",
+            transition: "border-color 0.15s ease",
           }}
         >
           + New Exam Session
-        </Link>
+        </MotionLink>
       </div>
 
       {error && (
@@ -135,7 +133,9 @@ export default function ExamSessionsPage() {
         </div>
       )}
 
-      {sessions.length === 0 ? (
+      {loading ? (
+        <TableSkeleton rows={5} columns={5} />
+      ) : sessions.length === 0 ? (
         <EmptyState
           title="No exam sessions yet"
           description="Create your first exam session to start organizing assignments and grading."
@@ -240,8 +240,10 @@ export default function ExamSessionsPage() {
               header: "",
               render: (s) => (
                 <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                  <Link
+                  <MotionLink
                     href={`/exam-sessions/${s.id}`}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.96 }}
                     style={{
                       padding: "6px 12px",
                       fontFamily: "Inter, Arial, sans-serif",
@@ -255,10 +257,12 @@ export default function ExamSessionsPage() {
                     }}
                   >
                     Manage
-                  </Link>
-                  <button
+                  </MotionLink>
+                  <motion.button
                     onClick={() => handleDelete(s.id)}
                     disabled={deleting === s.id}
+                    whileHover={deleting === s.id ? {} : { scale: 1.03 }}
+                    whileTap={deleting === s.id ? {} : { scale: 0.96 }}
                     style={{
                       padding: "6px 12px",
                       fontFamily: "Inter, Arial, sans-serif",
@@ -273,7 +277,7 @@ export default function ExamSessionsPage() {
                     }}
                   >
                     {deleting === s.id ? "..." : "Delete"}
-                  </button>
+                  </motion.button>
                 </div>
               ),
             },

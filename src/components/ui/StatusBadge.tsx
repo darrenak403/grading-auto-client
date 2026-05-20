@@ -10,7 +10,11 @@ type BadgeVariant =
   | "default"
   | "orange"
   | "api"
-  | "razor";
+  | "razor"
+  | "method-get"
+  | "method-post"
+  | "method-put"
+  | "method-delete";
 
 const variantStyles: Record<
   BadgeVariant,
@@ -55,6 +59,26 @@ const variantStyles: Record<
     bg: "#faf5ff",
     text: "#7c3aed",
     border: "#e9d5ff",
+  },
+  "method-get": {
+    bg: "#61affe",
+    text: "#ffffff",
+    border: "#61affe",
+  },
+  "method-post": {
+    bg: "#49cc90",
+    text: "#ffffff",
+    border: "#49cc90",
+  },
+  "method-put": {
+    bg: "#fca130",
+    text: "#ffffff",
+    border: "#fca130",
+  },
+  "method-delete": {
+    bg: "#f93e3e",
+    text: "#ffffff",
+    border: "#f93e3e",
   },
 };
 
