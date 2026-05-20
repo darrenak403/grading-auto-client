@@ -234,7 +234,7 @@ export default function DashboardPage() {
         }}
       >
         <MotionLink
-          href="/exam-sessions/create"
+          href="/exam-sessions?create=true"
           whileHover={{ y: -1, scale: 1.01, backgroundColor: "#ea580c" }}
           whileTap={{ scale: 0.97 }}
           style={{
@@ -413,7 +413,7 @@ export default function DashboardPage() {
             description="Create your first exam session to start organizing assignments and grading."
             action={
               <Link
-                href="/exam-sessions/create"
+                href="/exam-sessions?create=true"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",

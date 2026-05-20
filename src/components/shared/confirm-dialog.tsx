@@ -103,7 +103,7 @@ export function ConfirmDialog({
                     type="button"
                     disabled={isLoading}
                     onClick={() => setIsOpen(false)}
-                    className="px-4 py-2 text-sm font-semibold text-[#717171] hover:text-[#201515] hover:bg-[#f7f7f7] rounded-lg transition-colors cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed border border-[#ebebeb]"
+                    className="px-4 py-2 text-sm font-semibold text-[#717171] hover:text-[#201515] hover:bg-[#f7f7f7] rounded-xl transition-colors cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed border border-[#ebebeb]"
                   >
                     {cancelLabel}
                   </button>
@@ -113,7 +113,7 @@ export function ConfirmDialog({
                   disabled={isLoading}
                   onClick={handleConfirm}
                   className={cn(
-                    "px-4 py-2 text-sm font-semibold rounded-lg text-white transition-all cursor-pointer select-none active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed",
+                    "px-4 py-2 text-sm font-semibold rounded-xl text-white transition-all cursor-pointer select-none active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed",
                     variant === "destructive"
                       ? "bg-red-600 hover:bg-red-700 shadow-red-500/10"
                       : "bg-[#f97316] hover:bg-[#ea580c] shadow-orange-500/10"

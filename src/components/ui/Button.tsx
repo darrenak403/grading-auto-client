@@ -43,9 +43,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizeMap: Record<ButtonSize, string> = {
-      sm: "px-3 py-[6px] text-[0.875rem] rounded-[6px]",
-      md: "px-4 py-[8px] text-[1rem] rounded-[6px]",
-      lg: "px-6 py-5 text-[1rem] rounded-[6px]",
+      sm: "px-3 py-[6px] text-[0.875rem] rounded-xl",
+      md: "px-4 py-[8px] text-[1rem] rounded-xl",
+      lg: "px-6 py-5 text-[1rem] rounded-xl",
     };
 
     const classes = cn(

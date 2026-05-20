@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Table } from "@/components/ui/Table";
 import { TableSkeleton, useConfirm } from "@/components/ui";
 import { motion } from "framer-motion";
+import { CreateExamSessionDialog } from "@/components/shared/CreateExamSessionDialog";
 
 const MotionLink = motion(Link);
 
@@ -17,9 +18,21 @@ export default function ExamSessionsPage() {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [deleting, setDeleting] = React.useState<string | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = React.useState(false);
 
   React.useEffect(() => {
     loadSessions();
+  }, []);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("create") === "true") {
+        setIsCreateOpen(true);
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, "", newUrl);
+      }
+    }
   }, []);
 
   const loadSessions = async () => {
@@ -102,8 +115,8 @@ export default function ExamSessionsPage() {
             Exam Sessions
           </h1>
         </div>
-        <MotionLink
-          href="/exam-sessions/create"
+        <motion.button
+          onClick={() => setIsCreateOpen(true)}
           whileHover={{ y: -1, scale: 1.01, backgroundColor: "#ea580c" }}
           whileTap={{ scale: 0.97 }}
           style={{
@@ -116,13 +129,14 @@ export default function ExamSessionsPage() {
             color: "#ffffff",
             backgroundColor: "#f97316",
             border: "1px solid #f97316",
-            borderRadius: "4px",
+            borderRadius: "12px",
             textDecoration: "none",
             transition: "border-color 0.15s ease",
+            cursor: "pointer",
           }}
         >
           + New Exam Session
-        </MotionLink>
+        </motion.button>
       </div>
 
       {error && (
@@ -131,7 +145,7 @@ export default function ExamSessionsPage() {
             padding: "16px",
             backgroundColor: "#fef2f2",
             border: "1px solid #fecaca",
-            borderRadius: "5px",
+            borderRadius: "12px",
             color: "#dc2626",
             marginBottom: "24px",
           }}
@@ -147,8 +161,8 @@ export default function ExamSessionsPage() {
           title="No exam sessions yet"
           description="Create your first exam session to start organizing assignments and grading."
           action={
-            <Link
-              href="/exam-sessions/create"
+            <button
+              onClick={() => setIsCreateOpen(true)}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -159,12 +173,13 @@ export default function ExamSessionsPage() {
                 color: "#ffffff",
                 backgroundColor: "#f97316",
                 border: "1px solid #f97316",
-                borderRadius: "4px",
+                borderRadius: "12px",
                 textDecoration: "none",
+                cursor: "pointer",
               }}
             >
               + New Exam Session
-            </Link>
+            </button>
           }
         />
       ) : (
@@ -210,7 +225,7 @@ export default function ExamSessionsPage() {
                   style={{
                     padding: "2px 8px",
                     backgroundColor: "#f4f4f5",
-                    borderRadius: "4px",
+                    borderRadius: "12px",
                     fontSize: "0.8125rem",
                     fontWeight: 600,
                     color: "#3f3f46",
@@ -259,7 +274,7 @@ export default function ExamSessionsPage() {
                       color: "#ffffff",
                       backgroundColor: "#f97316",
                       border: "1px solid #f97316",
-                      borderRadius: "4px",
+                      borderRadius: "12px",
                       textDecoration: "none",
                     }}
                   >
@@ -278,7 +293,7 @@ export default function ExamSessionsPage() {
                       color: "#dc2626",
                       backgroundColor: "transparent",
                       border: "1px solid #ebebeb",
-                      borderRadius: "4px",
+                      borderRadius: "12px",
                       cursor: deleting === s.id ? "not-allowed" : "pointer",
                       opacity: deleting === s.id ? 0.6 : 1,
                     }}
@@ -294,6 +309,12 @@ export default function ExamSessionsPage() {
           emptyMessage="No exam sessions found"
         />
       )}
+
+      <CreateExamSessionDialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        onSuccess={loadSessions}
+      />
     </div>
   );
 }

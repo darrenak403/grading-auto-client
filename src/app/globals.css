@@ -66,9 +66,9 @@
   
   /* === Border Radius === */
   --radius-tight: 3px;      /* Small inline spans */
-  --radius-standard: 6px;    /* Orange CTA buttons, tags */
-  --radius-content: 6px;      /* Cards, links, containers */
-  --radius-comfortable: 6px; /* Featured cards, large buttons, tabs */
+  --radius-standard: 12px;    /* Orange CTA buttons, tags */
+  --radius-content: 12px;      /* Cards, links, containers */
+  --radius-comfortable: 12px; /* Featured cards, large buttons, tabs */
   --radius-social: 14px;     /* Social icon buttons */
   --radius-pill: 20px;       /* Play buttons, pill buttons */
   
@@ -581,6 +581,17 @@ input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
   outline: none;
+}
+
+/* ============================================
+   CUSTOM UTILITIES
+   ============================================ */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* ============================================

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Trash2, Eye, Filter } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { api } from "@/lib";
 import type { Submission } from "@/types";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -177,7 +177,7 @@ export default function SubmissionsPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setSelectedSubmissionId(s.id)}
-            className="px-2.5 py-1.5 bg-white border border-[#dddddd] hover:border-[#f97316] text-[10px] font-semibold text-[#222222] rounded-md transition-all select-none cursor-pointer hover:bg-[#fff7ed] hover:text-[#ea580c] flex items-center gap-1.5"
+            className="px-2.5 py-1.5 bg-white border border-[#dddddd] hover:border-[#f97316] text-[10px] font-semibold text-[#222222] rounded-xl transition-all select-none cursor-pointer hover:bg-[#fff7ed] hover:text-[#ea580c] flex items-center gap-1.5"
           >
             View
           </button>

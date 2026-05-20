@@ -124,7 +124,7 @@ export function AdjustResultCard({ result, onAdjusted }: AdjustResultCardProps) 
           <button
             onClick={handleAdjust}
             disabled={saving}
-            className="flex-1 w-full px-4 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white rounded-lg text-xs font-semibold transition-all active:scale-[0.97] cursor-pointer disabled:opacity-50 disabled:pointer-events-none h-[38px] flex items-center justify-center select-none"
+            className="flex-1 w-full px-4 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white rounded-xl text-xs font-semibold transition-all active:scale-[0.97] cursor-pointer disabled:opacity-50 disabled:pointer-events-none h-[38px] flex items-center justify-center select-none"
           >
             {saving ? "Saving..." : "Update"}
           </button>
@@ -132,7 +132,7 @@ export function AdjustResultCard({ result, onAdjusted }: AdjustResultCardProps) 
             <button
               onClick={handleRemoveAdjustment}
               disabled={saving}
-              className="flex-1 w-full px-4 py-2 bg-transparent hover:bg-red-50 text-red-600 border border-[#ebebeb] hover:border-red-100 rounded-lg text-xs font-semibold transition-all active:scale-[0.97] cursor-pointer disabled:opacity-50 disabled:pointer-events-none h-[38px] flex items-center justify-center select-none"
+              className="flex-1 w-full px-4 py-2 bg-transparent hover:bg-red-50 text-red-600 border border-[#ebebeb] hover:border-red-100 rounded-xl text-xs font-semibold transition-all active:scale-[0.97] cursor-pointer disabled:opacity-50 disabled:pointer-events-none h-[38px] flex items-center justify-center select-none"
             >
               Cancel
             </button>

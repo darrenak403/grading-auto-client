@@ -49,7 +49,7 @@ export function Sidebar() {
           onClick={closeSidebar}
           whileHover={{ x: 4 }}
           whileTap={{ scale: 0.98 }}
-          className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 cursor-pointer ${isActive
+          className={`flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 cursor-pointer ${isActive
               ? "bg-[#fef2e8] text-[#f97316] pl-3"
               : "text-[#717171] hover:bg-[#f4f4f5] hover:text-[#222222]"
             }`}
@@ -89,7 +89,7 @@ export function Sidebar() {
         <button
           onClick={toggleSidebar}
           aria-label="Toggle navigation menu"
-          className="p-2 text-[#222222] hover:bg-[#f4f4f5] rounded-lg transition-colors cursor-pointer"
+          className="p-2 text-[#222222] hover:bg-[#f4f4f5] rounded-xl transition-colors cursor-pointer"
         >
           <Menu className="w-6 h-6" />
         </button>
@@ -128,7 +128,7 @@ export function Sidebar() {
                 <button
                   onClick={closeSidebar}
                   aria-label="Close menu"
-                  className="p-2 text-[#222222] hover:bg-[#f4f4f5] rounded-lg transition-colors cursor-pointer"
+                  className="p-2 text-[#222222] hover:bg-[#f4f4f5] rounded-xl transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>

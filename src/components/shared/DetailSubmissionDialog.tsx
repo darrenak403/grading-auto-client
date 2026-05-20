@@ -187,7 +187,7 @@ export function DetailSubmissionDialog({
                   <p className="text-sm text-[#717171] mb-6">{error || "This submission details could not be found."}</p>
                   <button
                     onClick={() => onOpenChange(false)}
-                    className="inline-flex items-center justify-center px-6 py-2.5 bg-[#f97316] hover:bg-[#ea580c] text-white rounded-lg text-sm font-semibold transition-all cursor-pointer active:scale-[0.98]"
+                    className="inline-flex items-center justify-center px-6 py-2.5 bg-[#f97316] hover:bg-[#ea580c] text-white rounded-xl text-sm font-semibold transition-all cursor-pointer active:scale-[0.98]"
                   >
                     Close Window
                   </button>
@@ -267,7 +267,7 @@ export function DetailSubmissionDialog({
 
                   <button
                     onClick={loadSubmission}
-                    className="p-2 text-[#717171] hover:text-[#f97316] hover:bg-[#f4f4f5] rounded-lg transition-colors cursor-pointer select-none active:scale-95 flex items-center gap-1.5 text-xs font-semibold"
+                    className="p-2 text-[#717171] hover:text-[#f97316] hover:bg-[#f4f4f5] rounded-xl transition-colors cursor-pointer select-none active:scale-95 flex items-center gap-1.5 text-xs font-semibold"
                     title="Reload Data"
                   >
                     <RefreshCw size={12} />
@@ -533,7 +533,7 @@ export function DetailSubmissionDialog({
                             <button
                               onClick={handleSaveNotes}
                               disabled={savingNotes}
-                              className="px-6 py-2.5 bg-[#f97316] hover:bg-[#ea580c] text-white rounded-lg text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:pointer-events-none shadow-sm shadow-[#f97316]/10 select-none"
+                              className="px-6 py-2.5 bg-[#f97316] hover:bg-[#ea580c] text-white rounded-xl text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:pointer-events-none shadow-sm shadow-[#f97316]/10 select-none"
                             >
                               {savingNotes ? "Saving..." : "Save Comments"}
                             </button>

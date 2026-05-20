@@ -35,7 +35,8 @@ export function Table<T>({
         overflow: "auto",
         maxHeight,
         border: borderless ? "none" : "1px solid #c5c0b1",
-        borderRadius: borderless ? "0" : "6px",
+        borderRadius: borderless ? "0" : "12px",
+
       }}
     >
       <table

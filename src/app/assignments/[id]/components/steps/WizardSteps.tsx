@@ -139,7 +139,7 @@ export function Step1() {
                               : "Supported format: .csv up to 10MB"}
                           </p>
 
-                          <label className="inline-flex items-center justify-center px-5 py-2.5 bg-white border border-[#dddddd] rounded-lg text-sm font-semibold text-[#222222] hover:border-[#f97316] hover:bg-[#fff7ed] hover:text-[#ea580c] transition-all cursor-pointer select-none active:scale-[0.98]">
+                          <label className="inline-flex items-center justify-center px-5 py-2.5 bg-white border border-[#dddddd] rounded-xl text-sm font-semibold text-[#222222] hover:border-[#f97316] hover:bg-[#fff7ed] hover:text-[#ea580c] transition-all cursor-pointer select-none active:scale-[0.98]">
                             Select file...
                             <input
                               type="file"
@@ -176,7 +176,7 @@ export function Step1() {
                                 setImportFile(null);
                                 setImportResult(null);
                               }}
-                              className="inline-flex items-center justify-center px-5 py-3 bg-white border border-[#dddddd] text-[#222222] rounded-lg text-sm font-semibold hover:border-red-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer active:scale-[0.98]"
+                              className="inline-flex items-center justify-center px-5 py-3 bg-white border border-[#dddddd] text-[#222222] rounded-xl text-sm font-semibold hover:border-red-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer active:scale-[0.98]"
                             >
                               Cancel
                             </button>
@@ -618,7 +618,7 @@ export function Step3() {
                                 { id: "init-1", title: "", type: "0", maxScore: 10, artifactFolderName: "", testCases: [], showTestCasesConfig: false }
                               ]);
                             }}
-                            className="inline-flex items-center justify-center px-5 py-2.5 bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-semibold rounded-lg transition-all cursor-pointer active:scale-95 shadow-sm shadow-orange-500/15"
+                            className="inline-flex items-center justify-center px-5 py-2.5 bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-semibold rounded-xl transition-all cursor-pointer active:scale-95 shadow-sm shadow-orange-500/15"
                           >
                             Add the first question
                           </button>
@@ -672,7 +672,7 @@ export function Step3() {
                                       <button
                                         onClick={() => handleToggleDetail(q.id)}
                                         className={cn(
-                                          "inline-flex items-center gap-1 px-3.5 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer select-none active:scale-95",
+                                          "inline-flex items-center gap-1 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer select-none active:scale-95",
                                           isExpanded
                                             ? "bg-[#fff7ed] border-[#f97316] text-[#ea580c]"
                                             : "bg-white border-[#dddddd] text-[#222222] hover:border-[#f97316] hover:bg-[#fff7ed] hover:text-[#ea580c]"
@@ -850,7 +850,7 @@ export function Step3() {
                                                   initialItems: []
                                                 });
                                               }}
-                                              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#fff7ed] hover:bg-[#ffedd5] text-[#f97316] text-xs font-semibold rounded-lg transition-colors"
+                                              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#fff7ed] hover:bg-[#ffedd5] text-[#f97316] text-xs font-semibold rounded-xl transition-colors"
                                             >
                                               <Plus size={14} /> Add New Test Cases
                                             </button>
@@ -995,7 +995,7 @@ export function Step3() {
                                               initialItems: item.testCases
                                             });
                                           }}
-                                          className="inline-flex items-center gap-2 px-4 py-2 bg-[#fff7ed] hover:bg-[#ffedd5] text-[#f97316] text-xs font-semibold rounded-lg transition-colors w-full justify-center border border-[#ffedd5]"
+                                          className="inline-flex items-center gap-2 px-4 py-2 bg-[#fff7ed] hover:bg-[#ffedd5] text-[#f97316] text-xs font-semibold rounded-xl transition-colors w-full justify-center border border-[#ffedd5]"
                                         >
                                           <Settings size={14} />
                                           {item.testCases.length > 0
@@ -1023,7 +1023,7 @@ export function Step3() {
                                   <button
                                     type="button"
                                     onClick={() => setShowCreateQuestion(false)}
-                                    className="px-5 py-2.5 bg-white border border-[#dddddd] text-[#222222] text-xs font-semibold rounded-lg hover:bg-[#f7f7f7] transition-all cursor-pointer active:scale-97 select-none"
+                                    className="px-5 py-2.5 bg-white border border-[#dddddd] text-[#222222] text-xs font-semibold rounded-xl hover:bg-[#f7f7f7] transition-all cursor-pointer active:scale-97 select-none"
                                   >
                                     Cancel
                                   </button>
@@ -1031,7 +1031,7 @@ export function Step3() {
                                     type="button"
                                     onClick={() => handleCreateQuestion()}
                                     disabled={creatingQuestion || !questionsFormList.some((q: any) => q.title.trim() && q.artifactFolderName.trim())}
-                                    className="px-5 py-2.5 bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-semibold rounded-lg transition-all cursor-pointer disabled:bg-[#ebebeb] disabled:text-[#b0b0b0] active:scale-97 select-none"
+                                    className="px-5 py-2.5 bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-semibold rounded-xl transition-all cursor-pointer disabled:bg-[#ebebeb] disabled:text-[#b0b0b0] active:scale-97 select-none"
                                   >
                                     {creatingQuestion ? "Creating..." : "Save Question"}
                                   </button>
@@ -1203,7 +1203,7 @@ export function Step4() {
                         <button
                           onClick={handleTriggerGrading}
                           disabled={exporting || !gradingRound.trim()}
-                          className="h-[38px] px-5 bg-[#f97316] hover:bg-[#ea580c] text-white rounded-lg text-xs font-semibold transition-all cursor-pointer disabled:bg-[#ebebeb] disabled:text-[#b0b0b0] shadow-sm select-none flex items-center justify-center min-w-[140px]"
+                          className="h-[38px] px-5 bg-[#f97316] hover:bg-[#ea580c] text-white rounded-xl text-xs font-semibold transition-all cursor-pointer disabled:bg-[#ebebeb] disabled:text-[#b0b0b0] shadow-sm select-none flex items-center justify-center min-w-[140px]"
                         >
                           {exporting ? "Processing..." : "Trigger Grading"}
                         </button>
@@ -1286,14 +1286,14 @@ export function Step4() {
                                     <div className="flex items-center gap-3">
                                       <button
                                         onClick={() => setSelectedSubmissionId(s.id)}
-                                        className="px-2.5 py-1.5 bg-white border border-[#dddddd] hover:border-[#f97316] text-[10px] font-semibold text-[#222222] rounded-md transition-all text-underline-none select-none cursor-pointer hover:bg-[#fff7ed]"
+                                        className="px-2.5 py-1.5 bg-white border border-[#dddddd] hover:border-[#f97316] text-[10px] font-semibold text-[#222222] rounded-xl transition-all text-underline-none select-none cursor-pointer hover:bg-[#fff7ed]"
                                       >
                                         View
                                       </button>
                                       <button
                                         onClick={() => handleTriggerGradingForSubmission(s.id)}
                                         disabled={triggering === s.id}
-                                        className="px-2.5 py-1.5 bg-white border border-[#dddddd] hover:border-[#f97316] text-[#222222] text-[10px] font-semibold rounded-md transition-all cursor-pointer active:scale-95 hover:bg-[#fff7ed]"
+                                        className="px-2.5 py-1.5 bg-white border border-[#dddddd] hover:border-[#f97316] text-[#222222] text-[10px] font-semibold rounded-xl transition-all cursor-pointer active:scale-95 hover:bg-[#fff7ed]"
                                       >
                                         {triggering === s.id ? "..." : "Regrade"}
                                       </button>
@@ -1461,7 +1461,7 @@ export function Step5() {
                             {exportJob.status === "Done" && (
                               <button
                                 onClick={handleDownloadExport}
-                                className="inline-flex items-center justify-center px-4 py-2 bg-[#f97316] text-white text-xs font-semibold rounded-lg hover:bg-[#ea580c] transition-all cursor-pointer select-none"
+                                className="inline-flex items-center justify-center px-4 py-2 bg-[#f97316] text-white text-xs font-semibold rounded-xl hover:bg-[#ea580c] transition-all cursor-pointer select-none"
                               >
                                 Download Gradebook
                               </button>
@@ -1474,7 +1474,7 @@ export function Step5() {
                         <button
                           onClick={handleCreateExport}
                           disabled={exporting}
-                          className="inline-flex items-center justify-center px-6 py-3 bg-[#f97316] text-white rounded-lg text-sm font-semibold hover:bg-[#ea580c] transition-all cursor-pointer disabled:bg-[#ebebeb] disabled:text-[#b0b0b0] active:scale-97 shadow-sm shadow-orange-500/10"
+                          className="inline-flex items-center justify-center px-6 py-3 bg-[#f97316] text-white rounded-xl text-sm font-semibold hover:bg-[#ea580c] transition-all cursor-pointer disabled:bg-[#ebebeb] disabled:text-[#b0b0b0] active:scale-97 shadow-sm shadow-orange-500/10"
                         >
                           {exporting ? "Preparing Excel export..." : "Generate Gradebook"}
                         </button>

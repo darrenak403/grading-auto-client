@@ -118,13 +118,13 @@ export function TestCaseDialog({
             <div className="p-4 border-b border-[#ebebeb] flex gap-2">
               <button
                 onClick={() => handleTabChange("form")}
-                className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${activeTab === "form" ? "bg-[#fff7ed] text-[#f97316]" : "text-[#717171] hover:bg-[#f7f7f7]"}`}
+                className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === "form" ? "bg-[#fff7ed] text-[#f97316]" : "text-[#717171] hover:bg-[#f7f7f7]"}`}
               >
                 Form Input
               </button>
               <button
                 onClick={() => handleTabChange("json")}
-                className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${activeTab === "json" ? "bg-[#fff7ed] text-[#f97316]" : "text-[#717171] hover:bg-[#f7f7f7]"}`}
+                className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === "json" ? "bg-[#fff7ed] text-[#f97316]" : "text-[#717171] hover:bg-[#f7f7f7]"}`}
               >
                 Raw JSON
               </button>
@@ -180,8 +180,8 @@ export function TestCaseDialog({
             </div>
 
             <div className="p-4 border-t border-[#ebebeb] flex justify-end gap-3 bg-white">
-              <button onClick={onClose} className="px-5 py-2.5 text-xs font-semibold text-[#717171] hover:bg-[#f7f7f7] rounded-lg transition-colors">Cancel</button>
-              <button onClick={handleSave} disabled={isSaving} className="px-5 py-2.5 bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-semibold rounded-lg disabled:opacity-50 transition-colors flex items-center gap-2">
+              <button onClick={onClose} className="px-5 py-2.5 text-xs font-semibold text-[#717171] hover:bg-[#f7f7f7] rounded-xl transition-colors">Cancel</button>
+              <button onClick={handleSave} disabled={isSaving} className="px-5 py-2.5 bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-semibold rounded-xl disabled:opacity-50 transition-colors flex items-center gap-2">
                 {isSaving ? "Saving..." : "Confirm"}
               </button>
             </div>

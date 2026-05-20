@@ -118,7 +118,7 @@ export default function AssignmentsPage() {
             📤 My Submissions
           </Link>
           <Link
-            href="/assignments/create"
+            href="/exam-sessions"
             style={{
               display: "inline-flex",
               alignItems: "center",

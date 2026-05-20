@@ -126,7 +126,7 @@ export function TestCaseDetailDialog({
             </div>
             
             <div className="p-4 border-t border-[#ebebeb] flex justify-end bg-white">
-              <button onClick={onClose} className="px-5 py-2.5 text-xs font-semibold bg-[#f5f5f5] text-[#222222] hover:bg-[#ebebeb] rounded-lg transition-colors">
+              <button onClick={onClose} className="px-5 py-2.5 text-xs font-semibold bg-[#f5f5f5] text-[#222222] hover:bg-[#ebebeb] rounded-xl transition-colors">
                 Close
               </button>
             </div>

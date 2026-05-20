@@ -157,7 +157,8 @@ export function TableSkeleton({ rows = 5, columns = 5 }: TableSkeletonProps) {
           padding: "12px 16px",
           borderBottom: "1px solid #c5c0b1",
           backgroundColor: "#eceae3",
-          borderRadius: "4px",
+          borderRadius: "12px",
+
         }}
       >
         {Array.from({ length: columns }).map((_, i) => {
