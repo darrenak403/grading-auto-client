@@ -39,7 +39,7 @@ export function WizardFooter() {
                 }}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-[#717171] hover:text-[#f97316] hover:bg-[#fff7ed] transition-all cursor-pointer active:scale-95 underline animate-none"
               >
-                <span>Quay lại</span>
+                <span>Back</span>
               </button>
             ) : (
               <div />
@@ -48,7 +48,7 @@ export function WizardFooter() {
 
           <div className="flex items-center gap-5">
             <span className="text-xs text-[#717171] font-semibold">
-              Bước {currentStep} trên 5
+              Step {currentStep} of 5
             </span>
             {currentStep < 5 ? (
               <button
@@ -57,9 +57,9 @@ export function WizardFooter() {
                   if (currentStep === 1) {
                     if (!hasParticipants) {
                       openConfirm({
-                        title: "Thiếu danh sách sinh viên",
-                        description: "Vui lòng tải lên danh sách sinh viên ở Step 1 trước khi tiếp tục!",
-                        confirmLabel: "Đồng ý",
+                        title: "Missing Student List",
+                        description: "Please upload the student list in Step 1 before continuing!",
+                        confirmLabel: "OK",
                         showCancel: false,
                         onConfirm: () => { },
                       });
@@ -69,9 +69,9 @@ export function WizardFooter() {
                     const hasNewInputs = !!(sqlFile || givenZipFile || givenApiBaseUrl.trim());
                     if (!hasResources && !hasNewInputs) {
                       openConfirm({
-                        title: "Thiếu tài nguyên đề thi",
-                        description: "Vui lòng đính kèm ít nhất một tài nguyên đề thi (SQL, ZIP hoặc API Base URL) trước khi tiếp tục!",
-                        confirmLabel: "Đồng ý",
+                        title: "Missing Exam Resources",
+                        description: "Please attach at least one exam resource (SQL, ZIP, or API Base URL) before continuing!",
+                        confirmLabel: "OK",
                         showCancel: false,
                         onConfirm: () => { },
                       });
@@ -94,9 +94,9 @@ export function WizardFooter() {
                           setGivenZipFile(null);
                         } else {
                           openConfirm({
-                            title: "Lưu tài nguyên thất bại",
-                            description: res.message || "Lưu tài nguyên thất bại. Vui lòng thử lại!",
-                            confirmLabel: "Đồng ý",
+                            title: "Failed to Save Resources",
+                            description: res.message || "Failed to save resources. Please try again!",
+                            confirmLabel: "OK",
                             showCancel: false,
                             onConfirm: () => { },
                           });
@@ -104,9 +104,9 @@ export function WizardFooter() {
                         }
                       } catch {
                         openConfirm({
-                          title: "Lỗi hệ thống",
-                          description: "Lỗi hệ thống khi lưu tài nguyên. Vui lòng kiểm tra lại!",
-                          confirmLabel: "Đồng ý",
+                          title: "System Error",
+                          description: "System error while saving resources. Please check again!",
+                          confirmLabel: "OK",
                           showCancel: false,
                           onConfirm: () => { },
                         });
@@ -122,14 +122,14 @@ export function WizardFooter() {
                 }}
                 className="inline-flex items-center justify-center px-6 py-3 bg-[#f97316] rounded-lg text-sm font-semibold text-white hover:bg-[#ea580c] transition-all cursor-pointer active:scale-95 shadow-sm shadow-orange-500/15 disabled:bg-[#f7f7f7] disabled:text-[#b0b0b0] disabled:cursor-not-allowed"
               >
-                <span>{currentStep === 2 && savingSetup ? "Đang lưu..." : "Tiếp tục"}</span>
+                <span>{currentStep === 2 && savingSetup ? "Saving..." : "Continue"}</span>
               </button>
             ) : (
               <Link
                 href={assignment.examSessionId ? `/exam-sessions/${assignment.examSessionId}` : "/exam-sessions"}
                 className="inline-flex items-center justify-center px-6 py-3 bg-[#f97316] rounded-lg text-sm font-semibold text-white hover:bg-[#ea580c] transition-all cursor-pointer active:scale-95 shadow-sm shadow-orange-500/15"
               >
-                <span>Hoàn tất & Thoát</span>
+                <span>Finish and Exit</span>
               </Link>
             )}
           </div>

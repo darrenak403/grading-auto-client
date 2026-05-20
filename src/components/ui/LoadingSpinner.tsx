@@ -28,7 +28,7 @@ export function LoadingSpinner({
       >
         <Loader2
           size={size}
-          color="#ff4f00"
+          color="#f97316"
           style={{ animation: "spin 1s linear infinite" }}
         />
         {label && (
@@ -36,7 +36,7 @@ export function LoadingSpinner({
             style={{
               fontFamily: "Inter, Arial, sans-serif",
               fontSize: "0.9375rem",
-              color: "#939084",
+              color: "#717171",
               fontWeight: 500,
             }}
           >
@@ -63,7 +63,7 @@ export function LoadingSpinner({
     >
       <Loader2
         size={size}
-        color="#ff4f00"
+        color="#f97316"
         style={{ animation: "spin 1s linear infinite" }}
       />
       {label && (
@@ -71,7 +71,7 @@ export function LoadingSpinner({
           style={{
             fontFamily: "Inter, Arial, sans-serif",
             fontSize: "0.9375rem",
-            color: "#939084",
+            color: "#717171",
             fontWeight: 500,
           }}
         >

@@ -12,19 +12,19 @@
   /* === Color Palette === */
   
   /* Primary Colors */
-  --color-zapier-black: #201515;   /* Primary text, headings */
-  --color-cream: #fffefb;            /* Page background - warm cream */
-  --color-off-white: #fffdf9;        /* Secondary background surface */
+  --color-zapier-black: #222222;   /* Primary text, headings */
+  --color-cream: #ffffff;            /* Page background - pure white */
+  --color-off-white: #fcfcfc;        /* Secondary background surface */
   
   /* Brand Accent */
-  --color-orange: #ff4f00;           /* Primary CTA, active states */
+  --color-orange: #f97316;           /* Primary CTA, active states */
   
   /* Neutral Scale */
-  --color-charcoal: #36342e;         /* Secondary text */
-  --color-warm-gray: #939084;        /* Muted text, labels */
-  --color-sand: #c5c0b1;             /* Primary borders */
-  --color-light-sand: #eceae3;       /* Secondary buttons, surfaces */
-  --color-mid-warm: #b5b2aa;         /* Alternate border tone */
+  --color-charcoal: #3f3f46;         /* Secondary text */
+  --color-warm-gray: #717171;        /* Muted text, labels */
+  --color-sand: #ebebeb;             /* Primary borders */
+  --color-light-sand: #f4f4f5;       /* Secondary buttons, surfaces */
+  --color-mid-warm: #d4d4d8;         /* Alternate border tone */
   
   /* === Semantic Token Mapping (Legacy/Convenience) === */
   --color-text: var(--color-zapier-black);
@@ -66,9 +66,9 @@
   
   /* === Border Radius === */
   --radius-tight: 3px;      /* Small inline spans */
-  --radius-standard: 4px;    /* Orange CTA buttons, tags */
-  --radius-content: 5px;      /* Cards, links, containers */
-  --radius-comfortable: 8px; /* Featured cards, large buttons, tabs */
+  --radius-standard: 6px;    /* Orange CTA buttons, tags */
+  --radius-content: 6px;      /* Cards, links, containers */
+  --radius-comfortable: 6px; /* Featured cards, large buttons, tabs */
   --radius-social: 14px;     /* Social icon buttons */
   --radius-pill: 20px;       /* Play buttons, pill buttons */
   
@@ -575,6 +575,12 @@ body {
 *:focus-visible {
   outline: 2px solid var(--color-orange);
   outline-offset: 2px;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
 }
 
 /* ============================================

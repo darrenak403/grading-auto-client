@@ -14,6 +14,7 @@ import { WizardFooter } from "./components/layout/WizardFooter";
 import { Step1, Step2, Step3, Step4, Step5 } from "./components/steps/WizardSteps";
 import { TestCaseDialog } from "./components/dialogs/TestCaseDialog";
 import { TestCaseDetailDialog } from "./components/dialogs/TestCaseDetailDialog";
+import { DetailSubmissionDialog } from "@/components/shared/DetailSubmissionDialog";
 
 const slideVariants = {
   initial: (dir: number) => ({
@@ -48,13 +49,16 @@ function AssignmentWizardContent() {
     handleSaveTestCases,
     tcDialogSaving,
     tcDetailDialog,
-    setTcDetailDialog
+    setTcDetailDialog,
+    selectedSubmissionId,
+    setSelectedSubmissionId,
+    loadSubmissions
   } = useAssignmentWizard();
 
   if (loading && !assignment) {
     return (
       <div className="fixed inset-0 z-[9999] bg-white flex items-center justify-center">
-        <LoadingSpinner fullPage label="Đang tải dữ liệu bài tập..." />
+        <LoadingSpinner fullPage label="Loading assignment data..." />
       </div>
     );
   }
@@ -64,13 +68,13 @@ function AssignmentWizardContent() {
       <div className="fixed inset-0 z-[9999] bg-white flex items-center justify-center p-6">
         <div className="max-w-md w-full bg-white border border-[#ebebeb] rounded-2xl p-8 text-center shadow-lg shadow-black/5">
           <AlertCircle className="w-12 h-12 text-[#f97316] mx-auto mb-4 stroke-[1.5]" />
-          <h2 className="text-xl font-semibold text-[#222222] mb-2">Đã xảy ra lỗi</h2>
-          <p className="text-sm text-[#717171] mb-6">{error || "Không tìm thấy thông tin bài tập này."}</p>
+          <h2 className="text-xl font-semibold text-[#222222] mb-2">An Error Occurred</h2>
+          <p className="text-sm text-[#717171] mb-6">{error || "Could not find information for this assignment."}</p>
           <Link
             href="/exam-sessions"
             className="inline-flex items-center justify-center px-6 py-3 bg-[#f97316] hover:bg-[#ea580c] text-white rounded-lg text-sm font-semibold transition-all cursor-pointer active:scale-[0.98]"
           >
-            Quay lại trang chủ
+            Back to Home
           </Link>
         </div>
       </div>
@@ -135,6 +139,15 @@ function AssignmentWizardContent() {
         onClose={() => setTcDetailDialog((prev: any) => ({ ...prev, isOpen: false }))}
         tc={tcDetailDialog.tc}
         qType={tcDetailDialog.qType}
+      />
+
+      <DetailSubmissionDialog
+        open={selectedSubmissionId !== null}
+        submissionId={selectedSubmissionId}
+        onOpenChange={(open) => {
+          if (!open) setSelectedSubmissionId(null);
+        }}
+        onRefresh={loadSubmissions}
       />
     </div>
   );

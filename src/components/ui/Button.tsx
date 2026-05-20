@@ -34,18 +34,18 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     // Variant-specific styles (inline approach for consistency with inline navbar styles)
     const variantMap: Record<ButtonVariant, string> = {
       primary:
-        "bg-[#ff4f00] text-[#fffefb] border-[#ff4f00] hover:bg-[#e64600] hover:border-[#e64600]",
-      dark: "bg-[#201515] text-[#fffefb] border-[#201515] hover:bg-[#c5c0b1] hover:text-[#201515] hover:border-[#c5c0b1]",
-      light: "bg-[#eceae3] text-[#36342e] border-[#c5c0b1] hover:bg-[#c5c0b1] hover:text-[#201515]",
-      pill: "bg-[#fffefb] text-[#36342e] border-[#c5c0b1] hover:bg-[#eceae3] rounded-[20px]",
-      overlay: "bg-[rgba(45,45,46,0.5)] text-[#fffefb] border-transparent hover:bg-[#2d2d2e] rounded-[20px] backdrop-blur-sm",
-      outline: "bg-transparent text-[#201515] border-[#c5c0b1] hover:bg-[#eceae3] hover:border-[#c5c0b1]",
+        "bg-[#f97316] text-white border-[#f97316] hover:bg-[#ea580c] hover:border-[#ea580c]",
+      dark: "bg-[#222222] text-white border-[#222222] hover:bg-[#ebebeb] hover:text-[#222222] hover:border-[#ebebeb]",
+      light: "bg-[#f4f4f5] text-[#3f3f46] border-[#ebebeb] hover:bg-[#ebebeb] hover:text-[#222222]",
+      pill: "bg-white text-[#3f3f46] border-[#ebebeb] hover:bg-[#f4f4f5] rounded-[20px]",
+      overlay: "bg-[rgba(34,34,34,0.5)] text-white border-transparent hover:bg-[#222222] rounded-[20px] backdrop-blur-sm",
+      outline: "bg-transparent text-[#222222] border-[#ebebeb] hover:bg-[#f4f4f5] hover:border-[#ebebeb]",
     };
 
     const sizeMap: Record<ButtonSize, string> = {
-      sm: "px-3 py-[6px] text-[0.875rem] rounded-[4px]",
-      md: "px-4 py-[8px] text-[1rem] rounded-[4px]",
-      lg: "px-6 py-5 text-[1rem] rounded-[8px]",
+      sm: "px-3 py-[6px] text-[0.875rem] rounded-[6px]",
+      md: "px-4 py-[8px] text-[1rem] rounded-[6px]",
+      lg: "px-6 py-5 text-[1rem] rounded-[6px]",
     };
 
     const classes = cn(

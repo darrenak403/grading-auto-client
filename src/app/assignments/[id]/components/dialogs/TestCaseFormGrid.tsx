@@ -1,10 +1,7 @@
 import * as React from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, X, Plus } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
-import type { TestCase } from "@/types";
 import { TestCaseFormItem } from "../../types";
 
 export function TestCaseFormGrid({
@@ -37,8 +34,8 @@ export function TestCaseFormGrid({
           <input type="number" value={item.order.toString()} onChange={(e) => onChange("order", e.target.value === "" ? 0 : Number(e.target.value))} className="w-full bg-white border border-[#dddddd] rounded-lg px-2 py-1.5 text-xs text-[#222222] outline-none focus:border-[#f97316] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]" />
         </div>
         <div className="col-span-12 md:col-span-3 flex flex-col gap-1.5">
-          <label className="text-[10px] font-bold text-[#717171] uppercase tracking-wider">Tên TC <span className="text-[#f97316]">*</span></label>
-          <input type="text" value={item.name} onChange={(e) => onChange("name", e.target.value)} placeholder="Ví dụ: TC 1" className="w-full bg-white border border-[#dddddd] rounded-lg px-2 py-1.5 text-xs text-[#222222] outline-none focus:border-[#f97316]" />
+          <label className="text-[10px] font-bold text-[#717171] uppercase tracking-wider">TC Name <span className="text-[#f97316]">*</span></label>
+          <input type="text" value={item.name} onChange={(e) => onChange("name", e.target.value)} placeholder="e.g. TC 1" className="w-full bg-white border border-[#dddddd] rounded-lg px-2 py-1.5 text-xs text-[#222222] outline-none focus:border-[#f97316]" />
         </div>
         <div className="col-span-12 md:col-span-2 flex flex-col gap-1.5">
           <label className="text-[10px] font-bold text-[#717171] uppercase tracking-wider">Method</label>
@@ -63,7 +60,7 @@ export function TestCaseFormGrid({
           <input type="number" value={item.expectedStatus.toString()} onChange={(e) => onChange("expectedStatus", e.target.value === "" ? 200 : Number(e.target.value))} className="w-full bg-white border border-[#dddddd] rounded-lg px-2 py-1.5 text-xs text-[#222222] outline-none focus:border-[#f97316] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]" />
         </div>
         <div className="col-span-12 md:col-span-1 flex flex-col gap-1.5">
-          <label className="text-[10px] font-bold text-[#717171] uppercase tracking-wider">Điểm</label>
+          <label className="text-[10px] font-bold text-[#717171] uppercase tracking-wider">Score</label>
           <input type="number" value={item.score.toString()} onChange={(e) => onChange("score", e.target.value === "" ? 1 : Number(e.target.value))} className="w-full bg-white border border-[#dddddd] rounded-lg px-2 py-1.5 text-xs text-[#222222] outline-none focus:border-[#f97316] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]" />
         </div>
       </div>
@@ -104,7 +101,7 @@ export function TestCaseFormGrid({
             <input type="text" value={item.selectorText || ""} onChange={(e) => onChange("selectorText", e.target.value)} className="w-full bg-white border border-[#dddddd] rounded-lg px-2 py-1.5 text-xs text-[#222222] outline-none focus:border-[#f97316]" />
           </div>
           <div className="col-span-12 flex flex-col gap-1.5">
-            <label className="text-[10px] font-bold text-[#717171] uppercase tracking-wider">Input (JSON/Text cho POST)</label>
+            <label className="text-[10px] font-bold text-[#717171] uppercase tracking-wider">Input (JSON/Text for POST)</label>
             <textarea value={item.input || ""} onChange={(e) => onChange("input", e.target.value)} rows={3} className="w-full bg-white border border-[#dddddd] rounded-lg px-2 py-1.5 text-[11px] font-mono text-[#222222] outline-none focus:border-[#f97316]" />
           </div>
         </div>

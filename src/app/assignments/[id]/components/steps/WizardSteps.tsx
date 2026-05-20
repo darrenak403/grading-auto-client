@@ -5,17 +5,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Upload,
   CheckCircle2,
-  AlertCircle,
   Trash2,
-  Check,
   Plus,
   ChevronDown,
   ChevronUp,
-  Settings,
-  X
+  Settings
 } from "lucide-react";
-import { api } from "@/lib";
-import type { Assignment, Question, Submission, ExportJob, TestCase, CreateTestCaseRequest } from "@/types";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -124,10 +119,10 @@ export function Step1() {
                       <>
                         <div className="mb-8">
                           <h2 className="text-3xl font-semibold text-[#222222] mb-3 tracking-tight">
-                            Tải lên danh sách học viên
+                            Upload Student List
                           </h2>
                           <p className="text-sm text-[#717171] leading-relaxed">
-                            Bước đầu tiên: Đính kèm tệp CSV chứa danh sách sinh viên tham gia kỳ thi. Định dạng tệp yêu cầu có tiêu đề và hai cột: <strong className="text-[#222222] font-semibold">username, studentCode</strong>.
+                            First step: Attach a CSV file containing the list of students participating in the exam. The file format requires a header and two columns: <strong className="text-[#222222] font-semibold">username, studentCode</strong>.
                           </p>
                         </div>
 
@@ -136,16 +131,16 @@ export function Step1() {
                             <Upload size={20} className="stroke-[1.5]" />
                           </div>
                           <h3 className="text-base font-semibold text-[#222222] mb-1">
-                            {uploading ? "Đang xử lý..." : (importFile ? importFile.name : "Kéo thả hoặc duyệt file CSV")}
+                            {uploading ? "Processing..." : (importFile ? importFile.name : "Drag & drop or browse CSV file")}
                           </h3>
                           <p className="text-xs text-[#717171] mb-6">
                             {importFile
-                              ? `Dung lượng: ${(importFile.size / 1024).toFixed(1)} KB`
-                              : "Định dạng hỗ trợ: .csv tối đa 10MB"}
+                              ? `Size: ${(importFile.size / 1024).toFixed(1)} KB`
+                              : "Supported format: .csv up to 10MB"}
                           </p>
 
                           <label className="inline-flex items-center justify-center px-5 py-2.5 bg-white border border-[#dddddd] rounded-lg text-sm font-semibold text-[#222222] hover:border-[#f97316] hover:bg-[#fff7ed] hover:text-[#ea580c] transition-all cursor-pointer select-none active:scale-[0.98]">
-                            Chọn tệp tin...
+                            Select file...
                             <input
                               type="file"
                               accept=".csv"
@@ -167,7 +162,7 @@ export function Step1() {
                           <div className="p-4 bg-[#fff7ed] border border-[#ffedd5] rounded-2xl flex items-start gap-3 mb-8">
                             <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5 stroke-[1.5]" />
                             <div>
-                              <h4 className="text-sm font-semibold text-[#ea580c]">Thông báo từ hệ thống</h4>
+                              <h4 className="text-sm font-semibold text-[#ea580c]">System Notification</h4>
                               <p className="text-xs text-[#717171] mt-0.5">{importResult}</p>
                             </div>
                           </div>
@@ -183,7 +178,7 @@ export function Step1() {
                               }}
                               className="inline-flex items-center justify-center px-5 py-3 bg-white border border-[#dddddd] text-[#222222] rounded-lg text-sm font-semibold hover:border-red-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer active:scale-[0.98]"
                             >
-                              Hủy bỏ
+                              Cancel
                             </button>
                           )}
                         </div>
@@ -193,17 +188,17 @@ export function Step1() {
                         <div className="flex justify-between items-center mb-6 gap-4">
                           <div>
                             <h2 className="text-2xl font-semibold text-[#222222] tracking-tight">
-                              Danh sách sinh viên đã có ({participants.length})
+                              Existing Student List ({participants.length})
                             </h2>
                             <p className="text-xs text-[#717171] mt-1 leading-relaxed">
-                              Hệ thống đã nhận diện được danh sách học viên. Bạn có thể tiếp tục bước tiếp theo hoặc tải lên tệp mới.
+                              The system has detected the student list. You can proceed to the next step or upload a new file.
                             </p>
                           </div>
                           <button
                             onClick={() => setShowUploadForm(true)}
                             className="inline-flex items-center justify-center px-4 py-2.5 border border-[#f97316] text-[#f97316] bg-white rounded-full text-xs font-semibold hover:bg-[#fff7ed] hover:text-[#ea580c] transition-all cursor-pointer active:scale-95 select-none shrink-0"
                           >
-                            Tải lên tệp CSV khác
+                            Upload another CSV file
                           </button>
                         </div>
 
@@ -214,18 +209,18 @@ export function Step1() {
                               columns={[
                                 {
                                   key: "studentCode",
-                                  header: "Mã sinh viên",
+                                  header: "Student Code",
                                   render: (p: any) => <span className="font-semibold text-[#222222]">{p.studentCode}</span>,
                                 },
                                 {
                                   key: "username",
-                                  header: "Tên tài khoản",
+                                  header: "Username",
                                   render: (p: any) => <span className="text-[#717171]">{p.username}</span>,
                                 },
                               ]}
                               data={participants}
                               keyExtractor={(p: any) => p.id}
-                              emptyMessage="Không có sinh viên nào trong danh sách."
+                              emptyMessage="No students in the list."
                               borderless={true}
                             />
                           </div>
@@ -334,23 +329,23 @@ export function Step2() {
                   <div className="w-full flex flex-col py-4">
                     <div className="mb-8">
                       <h2 className="text-3xl font-semibold text-[#222222] mb-3 tracking-tight">
-                        Thiết lập tài nguyên đề thi
+                        Set Up Exam Resources
                       </h2>
                       <p className="text-sm text-[#717171] leading-relaxed">
-                        Đính kèm các tài nguyên cần thiết cho bài làm như tệp database SQL, API Base URL, hoặc mã nguồn khởi tạo (ZIP) để hệ thống chấm điểm tự động.
+                        Attach the necessary resources for the assignment, such as SQL database files, API Base URL, or initial source code (ZIP) for the automated grading system.
                       </p>
                     </div>
 
                     {setupMessage && (
                       <div
-                        className={`p-4 rounded-2xl flex items-start gap-3 mb-6 border ${setupMessage.includes("thành công")
+                        className={`p-4 rounded-2xl flex items-start gap-3 mb-6 border ${setupMessage.includes("success")
                           ? "bg-[#fff7ed] border-[#ffedd5] text-[#ea580c]"
                           : "bg-red-50 border-red-100 text-red-800"
                           }`}
                       >
                         <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-600 stroke-[1.5]" />
                         <div>
-                          <h4 className="text-sm font-semibold">Thông báo hệ thống</h4>
+                          <h4 className="text-sm font-semibold">System Notification</h4>
                           <p className="text-xs text-[#717171] mt-0.5">{setupMessage}</p>
                         </div>
                       </div>
@@ -362,7 +357,7 @@ export function Step2() {
                       <div className="p-6 border border-[#ebebeb] rounded-2xl bg-white flex flex-col justify-between gap-4 min-h-[180px]">
                         <div className="flex flex-col gap-2">
                           <div className="flex items-center justify-between gap-2">
-                            <h3 className="text-sm font-semibold text-[#222222]">Cơ sở dữ liệu (.sql)</h3>
+                            <h3 className="text-sm font-semibold text-[#222222]">Database (.sql)</h3>
                             <div className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold border flex items-center gap-1 select-none shrink-0 ${assignment.databaseSqlPath
                               ? "bg-[#fff7ed] text-[#ea580c] border-[#ffedd5]"
                               : "bg-[#f5f5f5] text-[#717171] border-[#e5e5e5]"
@@ -370,21 +365,21 @@ export function Step2() {
                               {assignment.databaseSqlPath ? (
                                 <>
                                   <span className="w-1 h-1 rounded-full bg-emerald-600 animate-pulse" />
-                                  Đã đính kèm
+                                  Attached
                                 </>
                               ) : (
-                                "Chưa cấu hình"
+                                "Not configured"
                               )}
                             </div>
                           </div>
                           <p className="text-[11px] text-[#717171] leading-relaxed">
-                            Cung cấp cấu trúc và dữ liệu mẫu SQL để khởi tạo môi trường chấm điểm cho bài làm.
+                            Provide SQL structure and sample data to initialize the grading environment for the assignment.
                           </p>
                         </div>
                         <div className="flex items-center gap-4">
                           <label className="flex-1 flex items-center justify-between px-4 py-3 border border-[#dddddd] rounded-xl bg-[#fcfcfc] cursor-pointer hover:border-[#f97316]/30 transition-all select-none">
                             <span className="text-xs text-[#717171] font-medium truncate max-w-[280px]">
-                              {sqlFile ? sqlFile.name : "Chọn tệp SQL..."}
+                              {sqlFile ? sqlFile.name : "Select SQL file..."}
                             </span>
                             <Upload size={14} className="text-[#717171] stroke-[1.5]" />
                             <input
@@ -399,7 +394,7 @@ export function Step2() {
                               onClick={() => setSqlFile(null)}
                               className="text-xs text-red-500 hover:text-red-700 font-semibold active:scale-95 cursor-pointer"
                             >
-                              Hủy bỏ
+                              Cancel
                             </button>
                           )}
                         </div>
@@ -417,21 +412,21 @@ export function Step2() {
                               {assignment.hasGivenZip ? (
                                 <>
                                   <span className="w-1 h-1 rounded-full bg-emerald-600 animate-pulse" />
-                                  Đã đính kèm
+                                  Attached
                                 </>
                               ) : (
-                                "Chưa cấu hình"
+                                "Not configured"
                               )}
                             </div>
                           </div>
                           <p className="text-[11px] text-[#717171] leading-relaxed">
-                            Mã nguồn ZIP của Given API sẽ được hệ thống giải nén và tự động kích hoạt dịch vụ chạy thử.
+                            The ZIP source code of the Given API will be extracted by the system and the mock service will be automatically activated.
                           </p>
                         </div>
                         <div className="flex items-center gap-4">
                           <label className="flex-1 flex items-center justify-between px-4 py-3 border border-[#dddddd] rounded-xl bg-[#fcfcfc] cursor-pointer hover:border-[#f97316]/30 transition-all select-none">
                             <span className="text-xs text-[#717171] font-medium truncate max-w-[280px]">
-                              {givenZipFile ? givenZipFile.name : "Chọn tệp ZIP..."}
+                              {givenZipFile ? givenZipFile.name : "Select ZIP file..."}
                             </span>
                             <Upload size={14} className="text-[#717171] stroke-[1.5]" />
                             <input
@@ -446,7 +441,7 @@ export function Step2() {
                               onClick={() => setGivenZipFile(null)}
                               className="text-xs text-red-500 hover:text-red-700 font-semibold active:scale-95 cursor-pointer"
                             >
-                              Hủy bỏ
+                              Cancel
                             </button>
                           )}
                         </div>
@@ -464,22 +459,22 @@ export function Step2() {
                               {assignment.givenApiBaseUrl ? (
                                 <>
                                   <span className="w-1 h-1 rounded-full bg-emerald-600 animate-pulse" />
-                                  Đã thiết lập
+                                  Set
                                 </>
                               ) : (
-                                "Chưa cấu hình"
+                                "Not configured"
                               )}
                             </div>
                           </div>
                           <p className="text-[11px] text-[#717171] leading-relaxed">
-                            Đường dẫn API thay thế trong trường hợp bạn sử dụng một API Endpoint đã được triển khai bên ngoài.
+                            Alternative API path in case you use an externally deployed API Endpoint.
                           </p>
                         </div>
                         <input
                           type="text"
                           value={givenApiBaseUrl}
                           onChange={(e) => setGivenApiBaseUrl(e.target.value)}
-                          placeholder="Ví dụ: https://api.example.com"
+                          placeholder="e.g. https://api.example.com"
                           className="w-full bg-white border border-[#dddddd] rounded-xl px-4 py-3 text-sm text-[#222222] outline-none transition-all focus:border-[#f97316]"
                         />
                       </div>
@@ -589,10 +584,10 @@ export function Step3() {
                     <div className="mb-8 flex justify-between items-start gap-4">
                       <div>
                         <h2 className="text-3xl font-semibold text-[#222222] mb-3 tracking-tight">
-                          Thiết lập danh sách câu hỏi
+                          Set Up Questions List
                         </h2>
                         <p className="text-sm text-[#717171] leading-relaxed">
-                          Khai báo các câu hỏi thi tương ứng với cấu trúc bài thi, hệ số điểm và kiểu ứng dụng để hỗ trợ Worker chấm điểm chính xác.
+                          Declare exam questions corresponding to the exam structure, score weight, and application type to help the Worker grade accurately.
                         </p>
                       </div>
                       {questions.length > 0 && !showCreateQuestion && (
@@ -605,7 +600,7 @@ export function Step3() {
                           }}
                           className="inline-flex items-center justify-center px-4 py-2.5 border border-[#f97316] text-[#f97316] bg-white rounded-full text-xs font-semibold hover:bg-[#fff7ed] hover:text-[#ea580c] transition-all cursor-pointer active:scale-95 select-none shrink-0"
                         >
-                          Thêm câu hỏi
+                          Add Question
                         </button>
                       )}
                     </div>
@@ -613,8 +608,8 @@ export function Step3() {
                     {/* Trường hợp chưa có câu hỏi nào và không trong trạng thái tạo mới */}
                     {questions.length === 0 && !showCreateQuestion ? (
                       <EmptyState
-                        title="Chưa có câu hỏi thi nào"
-                        description="Vui lòng thiết lập danh sách câu hỏi thi và test cases để Worker bắt đầu chấm điểm."
+                        title="No exam questions yet"
+                        description="Please set up the list of exam questions and test cases to start grading with the Worker."
                         action={
                           <button
                             onClick={() => {
@@ -625,7 +620,7 @@ export function Step3() {
                             }}
                             className="inline-flex items-center justify-center px-5 py-2.5 bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-semibold rounded-lg transition-all cursor-pointer active:scale-95 shadow-sm shadow-orange-500/15"
                           >
-                            Thêm câu hỏi đầu tiên
+                            Add the first question
                           </button>
                         }
                       />
@@ -634,7 +629,7 @@ export function Step3() {
                         {questions.length > 0 && (
                           <div className="mb-4">
                             <span className="text-xs font-bold text-[#717171] uppercase tracking-wider">
-                              Danh sách câu hỏi hiện tại ({questions.length})
+                              Current Question List ({questions.length})
                             </span>
                           </div>
                         )}
@@ -669,7 +664,7 @@ export function Step3() {
                                         <h4 className="text-sm font-semibold text-[#222222]">{q.title}</h4>
                                       </div>
                                       <p className="text-xs text-[#717171]">
-                                        Thư mục kiểm thử: <span className="text-[#222222] font-medium">{q.artifactFolderName}</span> | Điểm tối đa: <span className="text-[#222222] font-medium">{q.maxScore}</span>
+                                        Test Directory: <span className="text-[#222222] font-medium">{q.artifactFolderName}</span> | Max Score: <span className="text-[#222222] font-medium">{q.maxScore}</span>
                                       </p>
                                     </div>
 
@@ -683,7 +678,7 @@ export function Step3() {
                                             : "bg-white border-[#dddddd] text-[#222222] hover:border-[#f97316] hover:bg-[#fff7ed] hover:text-[#ea580c]"
                                         )}
                                       >
-                                        <span>{isExpanded ? "Đóng" : "Chi tiết"}</span>
+                                        <span>{isExpanded ? "Close" : "Details"}</span>
                                         {isExpanded ? (
                                           <ChevronUp size={14} className="stroke-[2]" />
                                         ) : (
@@ -694,7 +689,7 @@ export function Step3() {
                                       <button
                                         onClick={() => handleDeleteQuestion(q.id)}
                                         className="p-2 text-[#717171] hover:text-[#f97316] hover:bg-[#fff7ed] rounded-full transition-all cursor-pointer active:scale-95"
-                                        title="Xóa câu hỏi"
+                                        title="Delete question"
                                       >
                                         <Trash2 size={16} className="stroke-[1.5]" />
                                       </button>
@@ -713,23 +708,23 @@ export function Step3() {
                                         <div className="p-5 flex flex-col gap-4">
                                           <div className="flex justify-between items-center">
                                             <h5 className="text-xs font-bold text-[#222222] uppercase tracking-wider">
-                                              Danh sách Test Cases ({tcs.length})
+                                              Test Cases List ({tcs.length})
                                             </h5>
                                             <Link
                                               href={`/assignments/${assignmentId}/questions/${q.id}`}
                                               className="text-xs font-semibold text-[#f97316] hover:text-[#ea580c] hover:underline"
                                             >
-                                              Quản lý chi tiết →
+                                              Manage Details →
                                             </Link>
                                           </div>
 
                                           {isLoading ? (
                                             <div className="py-6 flex justify-center">
-                                              <LoadingSpinner label="Đang tải test cases..." />
+                                              <LoadingSpinner label="Loading test cases..." />
                                             </div>
                                           ) : tcs.length === 0 ? (
                                             <div className="py-6 text-center text-xs text-[#717171] border border-dashed border-[#dddddd] bg-white rounded-xl">
-                                              Chưa có test case nào được thiết lập. Vui lòng thêm bằng JSON bên dưới hoặc vào trang quản lý chi tiết.
+                                              No test cases configured yet. Please add them using JSON below or go to the detailed management page.
                                             </div>
                                           ) : (
                                             <div className="flex flex-col gap-2">
@@ -831,7 +826,7 @@ export function Step3() {
                                                             handleDeleteTestCaseInline(q.id, tc.id);
                                                           }}
                                                           className="p-2 text-[#717171] hover:text-red-500 hover:bg-red-50 rounded-full transition-all cursor-pointer active:scale-95 opacity-0 group-hover:opacity-100"
-                                                          title="Xóa Test Case này"
+                                                          title="Delete this Test Case"
                                                         >
                                                           <Trash2 size={16} className="stroke-[1.5]" />
                                                         </button>
@@ -857,7 +852,7 @@ export function Step3() {
                                               }}
                                               className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#fff7ed] hover:bg-[#ffedd5] text-[#f97316] text-xs font-semibold rounded-lg transition-colors"
                                             >
-                                              <Plus size={14} /> Thêm Test Cases Mới
+                                              <Plus size={14} /> Add New Test Cases
                                             </button>
                                           </div>
                                         </div>
@@ -874,7 +869,7 @@ export function Step3() {
                             <>
                               <div className="mt-6 mb-2">
                                 <span className="text-xs font-bold text-[#ea580c] uppercase tracking-wider">
-                                  Tạo mới câu hỏi thi
+                                  Create New Exam Question
                                 </span>
                               </div>
                               <div className="flex flex-col gap-4">
@@ -897,21 +892,21 @@ export function Step3() {
                                       <div className="grid grid-cols-12 gap-3 items-end">
                                         <div className="col-span-12 md:col-span-4 flex flex-col gap-1.5">
                                           <label className="text-[10px] font-bold text-[#717171] uppercase tracking-wider">
-                                            Tiêu đề câu hỏi <span className="text-[#f97316]">*</span>
+                                            Question Title <span className="text-[#f97316]">*</span>
                                           </label>
                                           <input
                                             type="text"
                                             required
                                             value={item.title}
                                             onChange={(e) => handleUpdateFormRow(item.id, "title", e.target.value)}
-                                            placeholder="Ví dụ: Question 1"
+                                            placeholder="e.g. Question 1"
                                             className="w-full bg-white border border-[#dddddd] rounded-lg px-3 py-2 text-sm text-[#222222] outline-none focus:border-[#f97316]"
                                           />
                                         </div>
 
                                         <div className="col-span-12 md:col-span-2 flex flex-col gap-1.5">
                                           <label className="text-[10px] font-bold text-[#717171] uppercase tracking-wider">
-                                            Kiểu ứng dụng
+                                            App Type
                                           </label>
                                           <Select
                                             value={item.type}
@@ -931,7 +926,7 @@ export function Step3() {
 
                                         <div className="col-span-12 md:col-span-2 flex flex-col gap-1.5">
                                           <label className="text-[10px] font-bold text-[#717171] uppercase tracking-wider">
-                                            Điểm tối đa
+                                            Max Score
                                           </label>
                                           <input
                                             type="number"
@@ -946,7 +941,7 @@ export function Step3() {
 
                                         <div className="col-span-12 md:col-span-2 flex flex-col gap-1.5">
                                           <label className="text-[10px] font-bold text-[#717171] uppercase tracking-wider">
-                                            Thư mục lưu trữ <span className="text-[#f97316]">*</span>
+                                            Storage Directory <span className="text-[#f97316]">*</span>
                                           </label>
                                           <input
                                             type="text"
@@ -955,7 +950,7 @@ export function Step3() {
                                             onChange={(e) =>
                                               handleUpdateFormRow(item.id, "artifactFolderName", e.target.value)
                                             }
-                                            placeholder="Ví dụ: Q1"
+                                            placeholder="e.g. Q1"
                                             className="w-full bg-white border border-[#dddddd] rounded-lg px-3 py-2 text-sm text-[#222222] outline-none focus:border-[#f97316]"
                                           />
                                         </div>
@@ -970,7 +965,7 @@ export function Step3() {
                                                 ? "text-[#ea580c] bg-[#fff7ed]"
                                                 : "text-[#717171] hover:text-[#ea580c] hover:bg-[#fff7ed]"
                                             )}
-                                            title="Cấu hình Test Cases JSON"
+                                            title="Configure JSON Test Cases"
                                           >
                                             <Plus size={16} className={cn("transition-transform duration-200", item.showTestCasesConfig && "rotate-45")} />
                                           </button>
@@ -980,7 +975,7 @@ export function Step3() {
                                             onClick={() => handleRemoveFormRow(item.id)}
                                             disabled={questionsFormList.length === 1}
                                             className="p-2 text-[#717171] hover:text-red-500 hover:bg-red-50 rounded-full transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed active:scale-95"
-                                            title="Xóa dòng này"
+                                            title="Delete this row"
                                           >
                                             <Trash2 size={16} className="stroke-[1.5]" />
                                           </button>
@@ -1004,8 +999,8 @@ export function Step3() {
                                         >
                                           <Settings size={14} />
                                           {item.testCases.length > 0
-                                            ? `Đã cấu hình ${item.testCases.length} Test Cases (Bấm để sửa)`
-                                            : "Cấu hình Test Cases"}
+                                            ? `Configured ${item.testCases.length} Test Cases (Click to edit)`
+                                            : "Configure Test Cases"}
                                         </button>
                                       </div>
                                     </motion.div>
@@ -1021,7 +1016,7 @@ export function Step3() {
                                   className="inline-flex items-center gap-1.5 px-4 py-2 border border-[#f97316] text-[#f97316] bg-white rounded-full text-xs font-semibold hover:bg-[#fff7ed] transition-all cursor-pointer active:scale-95 select-none"
                                 >
                                   <Plus size={14} className="stroke-[2.5]" />
-                                  Thêm câu hỏi mới
+                                  Add new question
                                 </button>
 
                                 <div className="flex gap-3">
@@ -1030,7 +1025,7 @@ export function Step3() {
                                     onClick={() => setShowCreateQuestion(false)}
                                     className="px-5 py-2.5 bg-white border border-[#dddddd] text-[#222222] text-xs font-semibold rounded-lg hover:bg-[#f7f7f7] transition-all cursor-pointer active:scale-97 select-none"
                                   >
-                                    Hủy bỏ
+                                    Cancel
                                   </button>
                                   <button
                                     type="button"
@@ -1038,7 +1033,7 @@ export function Step3() {
                                     disabled={creatingQuestion || !questionsFormList.some((q: any) => q.title.trim() && q.artifactFolderName.trim())}
                                     className="px-5 py-2.5 bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-semibold rounded-lg transition-all cursor-pointer disabled:bg-[#ebebeb] disabled:text-[#b0b0b0] active:scale-97 select-none"
                                   >
-                                    {creatingQuestion ? "Đang tạo..." : "Lưu câu hỏi"}
+                                    {creatingQuestion ? "Creating..." : "Save Question"}
                                   </button>
                                 </div>
                               </div>
@@ -1111,6 +1106,7 @@ export function Step4() {
       handleDeleteSubmission,
       handleTriggerGradingForSubmission,
       handleDeleteTestCaseInline,
+      setSelectedSubmissionId,
       exportJob,
       exporting,
       exportError,
@@ -1150,10 +1146,10 @@ export function Step4() {
                     <div className="mb-4 flex items-end justify-between gap-4">
                       <div>
                         <h2 className="text-lg font-bold text-[#222222] mb-1">
-                          Tải bài làm & Kích hoạt chấm điểm
+                          Upload Submissions & Trigger Grading
                         </h2>
                         <p className="text-xs text-[#717171]">
-                          Tải lên tệp ZIP bài làm của sinh viên và kích hoạt Worker bắt đầu chạy kiểm thử hàng loạt.
+                          Upload the ZIP file containing student submissions and trigger the Worker to start bulk testing.
                         </p>
                       </div>
                     </div>
@@ -1161,25 +1157,25 @@ export function Step4() {
                     <div className="p-4 border border-[#ebebeb] rounded-xl bg-white flex flex-col md:flex-row gap-4 md:items-end shadow-sm mb-6">
                       <div className="flex flex-col gap-1.5 flex-1 max-w-[200px]">
                         <label className="text-[10px] font-bold text-[#717171] uppercase tracking-wider">
-                          Đợt chấm điểm <span className="text-[#f97316]">*</span>
+                          Grading Round <span className="text-[#f97316]">*</span>
                         </label>
                         <input
                           type="text"
                           value={gradingRound}
                           onChange={(e) => setGradingRound(e.target.value)}
-                          placeholder="Ví dụ: Lần 1"
+                          placeholder="e.g. Round 1"
                           className="w-full bg-[#fcfcfc] border border-[#ebebeb] rounded-lg px-3 py-2 text-sm text-[#222222] outline-none focus:border-[#f97316] focus:bg-white transition-colors"
                         />
                       </div>
 
                       <div className="flex flex-col gap-1.5 flex-1">
                         <label className="text-[10px] font-bold text-[#717171] uppercase tracking-wider">
-                          1. Tệp ZIP bài làm
+                          1. Submissions ZIP File
                         </label>
                         <div className="flex items-center gap-2">
                           <label className="flex-1 flex items-center justify-between px-3 py-2 border border-[#ebebeb] rounded-lg bg-[#fcfcfc] cursor-pointer hover:border-[#f97316] hover:bg-white transition-all select-none">
                             <span className="text-xs text-[#717171] font-medium truncate max-w-[150px] md:max-w-[250px]">
-                              {uploading ? "Đang xử lý..." : (bulkFile ? bulkFile.name : "Chọn file (.zip)...")}
+                              {uploading ? "Processing..." : (bulkFile ? bulkFile.name : "Select ZIP file...")}
                             </span>
                             <Upload size={14} className="text-[#b0b0b0]" />
                             <input
@@ -1209,7 +1205,7 @@ export function Step4() {
                           disabled={exporting || !gradingRound.trim()}
                           className="h-[38px] px-5 bg-[#f97316] hover:bg-[#ea580c] text-white rounded-lg text-xs font-semibold transition-all cursor-pointer disabled:bg-[#ebebeb] disabled:text-[#b0b0b0] shadow-sm select-none flex items-center justify-center min-w-[140px]"
                         >
-                          {exporting ? "Đang xử lý..." : "Chạy chấm điểm"}
+                          {exporting ? "Processing..." : "Trigger Grading"}
                         </button>
                       </div>
                     </div>
@@ -1229,20 +1225,20 @@ export function Step4() {
                       </div>
                     )}
 
-                    {/* Danh sách các bài nộp */}
+                    {/* Submissions List */}
                     {loadingSubmissions ? (
                       <div className="py-8 flex justify-center">
-                        <LoadingSpinner label="Đang tải danh sách bài làm..." />
+                        <LoadingSpinner label="Loading submissions list..." />
                       </div>
                     ) : submissions.length === 0 ? (
                       <EmptyState
-                        title="Chưa có bài làm nào"
-                        description="Danh sách bài làm của học viên sẽ xuất hiện ở đây sau khi bạn upload tệp ZIP."
+                        title="No submissions yet"
+                        description="The list of student submissions will appear here after you upload the ZIP file."
                       />
                     ) : (
                       <div className="mt-6">
                         <h3 className="text-lg font-semibold text-[#222222] mb-4">
-                          Tiến độ & Kết quả chấm bài làm ({submissions.length})
+                          Grading Progress & Results ({submissions.length})
                         </h3>
                         <div className="border border-[#ebebeb] rounded-2xl overflow-hidden bg-white">
                           <div className="w-full">
@@ -1251,7 +1247,7 @@ export function Step4() {
                               columns={[
                                 {
                                   key: "student",
-                                  header: "Học viên",
+                                  header: "Student",
                                   render: (s: any) => (
                                     <div>
                                       <div className="font-semibold text-[#222222]">
@@ -1263,12 +1259,12 @@ export function Step4() {
                                 },
                                 {
                                   key: "status",
-                                  header: "Trạng thái",
+                                  header: "Status",
                                   render: (s: any) => <StatusBadge status={s.status} />,
                                 },
                                 {
                                   key: "score",
-                                  header: "Điểm số",
+                                  header: "Score",
                                   render: (s: any) =>
                                     s.totalScore !== undefined ? (
                                       <span
@@ -1288,18 +1284,18 @@ export function Step4() {
                                   header: "",
                                   render: (s: any) => (
                                     <div className="flex items-center gap-3">
-                                      <Link
-                                        href={`/submissions/${s.id}`}
+                                      <button
+                                        onClick={() => setSelectedSubmissionId(s.id)}
                                         className="px-2.5 py-1.5 bg-white border border-[#dddddd] hover:border-[#f97316] text-[10px] font-semibold text-[#222222] rounded-md transition-all text-underline-none select-none cursor-pointer hover:bg-[#fff7ed]"
                                       >
-                                        Xem
-                                      </Link>
+                                        View
+                                      </button>
                                       <button
                                         onClick={() => handleTriggerGradingForSubmission(s.id)}
                                         disabled={triggering === s.id}
                                         className="px-2.5 py-1.5 bg-white border border-[#dddddd] hover:border-[#f97316] text-[#222222] text-[10px] font-semibold rounded-md transition-all cursor-pointer active:scale-95 hover:bg-[#fff7ed]"
                                       >
-                                        {triggering === s.id ? "..." : "Chấm lại"}
+                                        {triggering === s.id ? "..." : "Regrade"}
                                       </button>
                                       <button
                                         onClick={() => handleDeleteSubmission(s.id)}
@@ -1313,7 +1309,7 @@ export function Step4() {
                               ]}
                               data={submissions}
                               keyExtractor={(s: any) => s.id}
-                              emptyMessage="Không tìm thấy bài làm nào."
+                              emptyMessage="No submissions found."
                               borderless={true}
                             />
                           </div>
@@ -1422,23 +1418,23 @@ export function Step5() {
                   <div className="w-full flex flex-col py-4">
                     <div className="mb-8">
                       <h2 className="text-3xl font-semibold text-[#222222] mb-3 tracking-tight">
-                        Kết xuất bảng điểm Excel
+                        Export Excel Gradebook
                       </h2>
                       <p className="text-sm text-[#717171] leading-relaxed">
-                        Bước hoàn tất: Kết xuất toàn bộ danh sách điểm của học viên đã chấm sang tệp bảng điểm Excel chuẩn (.xlsx) để phục vụ công tác nộp điểm.
+                        Final step: Export the entire list of graded student scores to a standard Excel spreadsheet (.xlsx) for grading submissions.
                       </p>
                     </div>
 
                     <div className="p-6 border border-[#ebebeb] rounded-2xl bg-[#fcfcfc] flex flex-col gap-6 max-w-lg w-full mb-8">
                       <div className="flex flex-col gap-1.5">
                         <label className="text-[11px] font-semibold text-[#717171] uppercase tracking-wider">
-                          Đợt / Vòng xuất điểm
+                          Grading Round
                         </label>
                         <input
                           type="text"
                           value={gradingRound}
                           onChange={(e) => setGradingRound(e.target.value)}
-                          placeholder="Ví dụ: Lần 1"
+                          placeholder="e.g. Round 1"
                           className="w-full bg-white border border-[#dddddd] rounded-lg px-4 py-2.5 text-sm text-[#222222] outline-none focus:border-[#f97316]"
                         />
                       </div>
@@ -1460,14 +1456,14 @@ export function Step5() {
                         >
                           <div className="flex items-center justify-between gap-4">
                             <span className="text-xs font-semibold text-[#222222] flex items-center gap-2">
-                              Trạng thái Job: <StatusBadge status={exportJob.status} />
+                              Job Status: <StatusBadge status={exportJob.status} />
                             </span>
                             {exportJob.status === "Done" && (
                               <button
                                 onClick={handleDownloadExport}
                                 className="inline-flex items-center justify-center px-4 py-2 bg-[#f97316] text-white text-xs font-semibold rounded-lg hover:bg-[#ea580c] transition-all cursor-pointer select-none"
                               >
-                                Tải bảng điểm
+                                Download Gradebook
                               </button>
                             )}
                           </div>
@@ -1480,7 +1476,7 @@ export function Step5() {
                           disabled={exporting}
                           className="inline-flex items-center justify-center px-6 py-3 bg-[#f97316] text-white rounded-lg text-sm font-semibold hover:bg-[#ea580c] transition-all cursor-pointer disabled:bg-[#ebebeb] disabled:text-[#b0b0b0] active:scale-97 shadow-sm shadow-orange-500/10"
                         >
-                          {exporting ? "Đang chuẩn bị xuất Excel..." : "Tạo xuất bảng điểm"}
+                          {exporting ? "Preparing Excel export..." : "Generate Gradebook"}
                         </button>
                       </div>
                     </div>

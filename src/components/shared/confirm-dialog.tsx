@@ -24,8 +24,8 @@ export function ConfirmDialog({
   title,
   description,
   onConfirm,
-  confirmLabel = "Xác nhận",
-  cancelLabel = "Hủy",
+  confirmLabel = "Confirm",
+  cancelLabel = "Cancel",
   variant = "default",
   isLoading,
   open,
@@ -77,8 +77,8 @@ export function ConfirmDialog({
               {/* Header */}
               <div className="flex gap-3">
                 <div className={cn(
-                  "p-2 rounded-full h-10 w-10 flex items-center justify-center shrink-0",
-                  variant === "destructive" ? "bg-red-50 text-red-500" : "bg-orange-50 text-[#f97316]"
+                   "p-2 rounded-full h-10 w-10 flex items-center justify-center shrink-0",
+                   variant === "destructive" ? "bg-red-50 text-red-500" : "bg-orange-50 text-[#f97316]"
                 )}>
                   {variant === "destructive" ? (
                     <AlertCircle className="w-5 h-5" />
@@ -119,7 +119,7 @@ export function ConfirmDialog({
                       : "bg-[#f97316] hover:bg-[#ea580c] shadow-orange-500/10"
                   )}
                 >
-                  {isLoading ? "Đang xử lý..." : confirmLabel}
+                  {isLoading ? "Processing..." : confirmLabel}
                 </button>
               </div>
             </motion.div>

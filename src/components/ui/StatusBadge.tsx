@@ -21,14 +21,14 @@ const variantStyles: Record<
   { bg: string; text: string; border: string }
 > = {
   pending: {
-    bg: "#fffdf9",
-    text: "#939084",
-    border: "#c5c0b1",
+    bg: "#fcfcfc",
+    text: "#717171",
+    border: "#ebebeb",
   },
   running: {
-    bg: "#fff8f0",
-    text: "#ff4f00",
-    border: "#ff4f00",
+    bg: "#fff7ed",
+    text: "#f97316",
+    border: "#fdba74",
   },
   done: {
     bg: "#f0fdf4",
@@ -41,14 +41,14 @@ const variantStyles: Record<
     border: "#fecaca",
   },
   default: {
-    bg: "#eceae3",
-    text: "#36342e",
-    border: "#c5c0b1",
+    bg: "#f4f4f5",
+    text: "#3f3f46",
+    border: "#ebebeb",
   },
   orange: {
-    bg: "#fff4ed",
-    text: "#ff4f00",
-    border: "#ff4f00",
+    bg: "#fff7ed",
+    text: "#f97316",
+    border: "#fdba74",
   },
   api: {
     bg: "#f0f9ff",

@@ -113,7 +113,7 @@ export default function ExportsPage() {
               fontWeight: 600,
               textTransform: "uppercase",
               letterSpacing: "0.5px",
-              color: "#939084",
+              color: "#717171",
               marginBottom: "8px",
             }}
           >
@@ -125,7 +125,7 @@ export default function ExportsPage() {
               fontSize: "2.5rem",
               fontWeight: 500,
               lineHeight: 1.1,
-              color: "#201515",
+              color: "#222222",
               margin: 0,
             }}
           >
@@ -168,7 +168,7 @@ export default function ExportsPage() {
                     <span
                       style={{
                         padding: "2px 8px",
-                        backgroundColor: "#eceae3",
+                        backgroundColor: "#f4f4f5",
                         borderRadius: "4px",
                         fontSize: "0.8125rem",
                         fontWeight: 600,
@@ -178,10 +178,10 @@ export default function ExportsPage() {
                     </span>
                   )}
                   {j.examSessionTitle && (
-                    <span style={{ color: "#201515" }}>{j.examSessionTitle}</span>
+                    <span style={{ color: "#222222" }}>{j.examSessionTitle}</span>
                   )}
                   {!j.assignmentCode && !j.examSessionTitle && (
-                    <span style={{ color: "#939084" }}>-</span>
+                    <span style={{ color: "#717171" }}>-</span>
                   )}
                 </div>
               ),
@@ -190,7 +190,7 @@ export default function ExportsPage() {
               key: "gradingRound",
               header: "Round",
               render: (j) => (
-                <span style={{ color: "#36342e", fontSize: "0.875rem" }}>
+                <span style={{ color: "#222222", fontSize: "0.875rem" }}>
                   {j.gradingRound || "-"}
                 </span>
               ),
@@ -204,7 +204,7 @@ export default function ExportsPage() {
               key: "createdAt",
               header: "Created",
               render: (j) => (
-                <span style={{ color: "#939084", fontSize: "0.875rem" }}>
+                <span style={{ color: "#717171", fontSize: "0.875rem" }}>
                   {j.createdAt
                     ? new Date(j.createdAt).toLocaleString("vi-VN", {
                         day: "2-digit",
@@ -224,16 +224,16 @@ export default function ExportsPage() {
                   <motion.button
                     onClick={() => handleDownload(j)}
                     disabled={downloading === j.id}
-                    whileHover={downloading === j.id ? {} : { scale: 1.05, backgroundColor: "#e04500", borderColor: "#e04500" }}
+                    whileHover={downloading === j.id ? {} : { scale: 1.05, backgroundColor: "#ea580c", borderColor: "#ea580c" }}
                     whileTap={downloading === j.id ? {} : { scale: 0.95 }}
                     transition={{ type: "spring", stiffness: 400, damping: 15 }}
                     style={{
                       fontFamily: "Inter, Arial, sans-serif",
                       fontSize: "0.8125rem",
                       fontWeight: 600,
-                      color: "#fffefb",
-                      backgroundColor: "#ff4f00",
-                      border: "1px solid #ff4f00",
+                      color: "#ffffff",
+                      backgroundColor: "#f97316",
+                      border: "1px solid #f97316",
                       borderRadius: "4px",
                       padding: "4px 12px",
                       cursor: downloading === j.id ? "not-allowed" : "pointer",
@@ -243,7 +243,7 @@ export default function ExportsPage() {
                     {downloading === j.id ? "..." : "Download"}
                   </motion.button>
                 ) : (
-                  <span style={{ color: "#939084", fontSize: "0.8125rem" }}>-</span>
+                  <span style={{ color: "#717171", fontSize: "0.8125rem" }}>-</span>
                 ),
             },
           ]}

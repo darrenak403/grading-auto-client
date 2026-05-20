@@ -94,7 +94,7 @@ export default function GradingPage() {
               fontWeight: 600,
               textTransform: "uppercase",
               letterSpacing: "0.5px",
-              color: "#939084",
+              color: "#717171",
               marginBottom: "8px",
             }}
           >
@@ -106,7 +106,7 @@ export default function GradingPage() {
               fontSize: "2.5rem",
               fontWeight: 500,
               lineHeight: 1.1,
-              color: "#201515",
+              color: "#222222",
               margin: 0,
             }}
           >
@@ -120,9 +120,9 @@ export default function GradingPage() {
             fontFamily: "Inter, Arial, sans-serif",
             fontSize: "0.875rem",
             fontWeight: 600,
-            color: "#36342e",
-            backgroundColor: "#eceae3",
-            border: "1px solid #c5c0b1",
+            color: "#222222",
+            backgroundColor: "#f4f4f5",
+            border: "1px solid #ebebeb",
             borderRadius: "8px",
             cursor: "pointer",
           }}
@@ -157,8 +157,8 @@ export default function GradingPage() {
             <div
               key={job.id}
               style={{
-                backgroundColor: "#fffefb",
-                border: "1px solid #c5c0b1",
+                backgroundColor: "#ffffff",
+                border: "1px solid #ebebeb",
                 borderRadius: "5px",
                 padding: "16px 20px",
                 display: "flex",
@@ -174,7 +174,7 @@ export default function GradingPage() {
                       fontFamily: "Inter, Arial, sans-serif",
                       fontSize: "0.9375rem",
                       fontWeight: 600,
-                      color: "#201515",
+                      color: "#222222",
                     }}
                   >
                     Submission: {(job as any)._studentCode || job.submissionId.slice(0, 8)}
@@ -183,7 +183,7 @@ export default function GradingPage() {
                     style={{
                       fontFamily: "Inter, Arial, sans-serif",
                       fontSize: "0.8125rem",
-                      color: "#939084",
+                      color: "#717171",
                     }}
                   >
                     {job.startedAt
@@ -212,7 +212,7 @@ export default function GradingPage() {
                   padding: "6px 12px",
                   fontSize: "0.8125rem",
                   fontWeight: 600,
-                  color: "#ff4f00",
+                  color: "#f97316",
                   textDecoration: "none",
                 }}
               >

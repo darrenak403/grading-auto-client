@@ -85,7 +85,7 @@ export default function DashboardPage() {
             fontWeight: 600,
             textTransform: "uppercase",
             letterSpacing: "0.5px",
-            color: "#939084",
+            color: "#717171",
             marginBottom: "8px",
           }}
         >
@@ -97,7 +97,7 @@ export default function DashboardPage() {
             fontSize: "2.5rem",
             fontWeight: 500,
             lineHeight: 1.1,
-            color: "#201515",
+            color: "#222222",
             margin: 0,
           }}
         >
@@ -119,10 +119,10 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          whileHover={{ y: -4, borderColor: "#ff4f00", boxShadow: "0 12px 20px -8px rgba(32, 21, 21, 0.08)" }}
+          whileHover={{ y: -4, borderColor: "#f97316", boxShadow: "0 12px 20px -8px rgba(34, 34, 34, 0.08)" }}
           style={{
-            backgroundColor: "#fffefb",
-            border: "1px solid #c5c0b1",
+            backgroundColor: "#ffffff",
+            border: "1px solid #ebebeb",
             borderRadius: "5px",
             padding: "32px",
             cursor: "pointer",
@@ -134,7 +134,7 @@ export default function DashboardPage() {
               fontFamily: "Inter, Arial, sans-serif",
               fontSize: "0.875rem",
               fontWeight: 600,
-              color: "#939084",
+              color: "#717171",
               marginBottom: "8px",
               textTransform: "uppercase",
               letterSpacing: "0.5px",
@@ -148,7 +148,7 @@ export default function DashboardPage() {
               fontSize: "3rem",
               fontWeight: 500,
               lineHeight: 1,
-              color: "#201515",
+              color: "#222222",
             }}
           >
             {stats?.totalSessions ?? 0}
@@ -161,7 +161,7 @@ export default function DashboardPage() {
               fontFamily: "Inter, Arial, sans-serif",
               fontSize: "0.875rem",
               fontWeight: 600,
-              color: "#ff4f00",
+              color: "#f97316",
               textDecoration: "none",
             }}
           >
@@ -173,10 +173,10 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.08, ease: "easeOut" }}
-          whileHover={{ y: -4, borderColor: "#ff4f00", boxShadow: "0 12px 20px -8px rgba(32, 21, 21, 0.08)" }}
+          whileHover={{ y: -4, borderColor: "#f97316", boxShadow: "0 12px 20px -8px rgba(34, 34, 34, 0.08)" }}
           style={{
-            backgroundColor: "#fffefb",
-            border: "1px solid #c5c0b1",
+            backgroundColor: "#ffffff",
+            border: "1px solid #ebebeb",
             borderRadius: "5px",
             padding: "32px",
             cursor: "pointer",
@@ -188,7 +188,7 @@ export default function DashboardPage() {
               fontFamily: "Inter, Arial, sans-serif",
               fontSize: "0.875rem",
               fontWeight: 600,
-              color: "#939084",
+              color: "#717171",
               marginBottom: "8px",
               textTransform: "uppercase",
               letterSpacing: "0.5px",
@@ -202,7 +202,7 @@ export default function DashboardPage() {
               fontSize: "3rem",
               fontWeight: 500,
               lineHeight: 1,
-              color: "#201515",
+              color: "#222222",
             }}
           >
             {stats?.totalAssignments ?? 0}
@@ -215,7 +215,7 @@ export default function DashboardPage() {
               fontFamily: "Inter, Arial, sans-serif",
               fontSize: "0.875rem",
               fontWeight: 600,
-              color: "#ff4f00",
+              color: "#f97316",
               textDecoration: "none",
             }}
           >
@@ -235,7 +235,7 @@ export default function DashboardPage() {
       >
         <MotionLink
           href="/exam-sessions/create"
-          whileHover={{ y: -1, scale: 1.01, backgroundColor: "#e04500" }}
+          whileHover={{ y: -1, scale: 1.01, backgroundColor: "#ea580c" }}
           whileTap={{ scale: 0.97 }}
           style={{
             display: "inline-flex",
@@ -245,9 +245,9 @@ export default function DashboardPage() {
             fontFamily: "Inter, Arial, sans-serif",
             fontSize: "1rem",
             fontWeight: 600,
-            color: "#fffefb",
-            backgroundColor: "#ff4f00",
-            border: "1px solid #ff4f00",
+            color: "#ffffff",
+            backgroundColor: "#f97316",
+            border: "1px solid #f97316",
             borderRadius: "4px",
             textDecoration: "none",
             transition: "border-color 0.15s ease",
@@ -267,9 +267,9 @@ export default function DashboardPage() {
             fontFamily: "Inter, Arial, sans-serif",
             fontSize: "1rem",
             fontWeight: 600,
-            color: "#36342e",
-            backgroundColor: "#eceae3",
-            border: "1px solid #c5c0b1",
+            color: "#3f3f46",
+            backgroundColor: "#f4f4f5",
+            border: "1px solid #ebebeb",
             borderRadius: "8px",
             textDecoration: "none",
             transition: "background-color 0.15s ease",
@@ -289,9 +289,9 @@ export default function DashboardPage() {
             fontFamily: "Inter, Arial, sans-serif",
             fontSize: "1rem",
             fontWeight: 600,
-            color: "#36342e",
-            backgroundColor: "#eceae3",
-            border: "1px solid #c5c0b1",
+            color: "#3f3f46",
+            backgroundColor: "#f4f4f5",
+            border: "1px solid #ebebeb",
             borderRadius: "8px",
             textDecoration: "none",
             transition: "background-color 0.15s ease",
@@ -317,7 +317,7 @@ export default function DashboardPage() {
               fontSize: "1.5rem",
               fontWeight: 600,
               letterSpacing: "-0.48px",
-              color: "#201515",
+              color: "#222222",
               margin: 0,
             }}
           >
@@ -329,7 +329,7 @@ export default function DashboardPage() {
               fontFamily: "Inter, Arial, sans-serif",
               fontSize: "0.875rem",
               fontWeight: 600,
-              color: "#ff4f00",
+              color: "#f97316",
               textDecoration: "none",
             }}
           >
@@ -352,12 +352,12 @@ export default function DashboardPage() {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.12 + index * 0.06, ease: "easeOut" }}
-                whileHover={{ y: -4, borderColor: "#ff4f00", boxShadow: "0 12px 20px -8px rgba(32, 21, 21, 0.08)" }}
+                whileHover={{ y: -4, borderColor: "#f97316", boxShadow: "0 12px 20px -8px rgba(34, 34, 34, 0.08)" }}
                 whileTap={{ scale: 0.99 }}
                 style={{
                   display: "block",
-                  backgroundColor: "#fffefb",
-                  border: "1px solid #c5c0b1",
+                  backgroundColor: "#ffffff",
+                  border: "1px solid #ebebeb",
                   borderRadius: "5px",
                   padding: "20px",
                   textDecoration: "none",
@@ -369,7 +369,7 @@ export default function DashboardPage() {
                     fontFamily: "Inter, Arial, sans-serif",
                     fontSize: "1.125rem",
                     fontWeight: 600,
-                    color: "#201515",
+                    color: "#222222",
                     marginBottom: "4px",
                   }}
                 >
@@ -380,7 +380,7 @@ export default function DashboardPage() {
                     style={{
                       fontFamily: "Inter, Arial, sans-serif",
                       fontSize: "0.875rem",
-                      color: "#939084",
+                      color: "#717171",
                       marginBottom: "12px",
                       display: "-webkit-box",
                       WebkitLineClamp: 2,
@@ -395,7 +395,7 @@ export default function DashboardPage() {
                   style={{
                     fontFamily: "Inter, Arial, sans-serif",
                     fontSize: "0.8125rem",
-                    color: "#939084",
+                    color: "#717171",
                   }}
                 >
                   {new Date(session.createdAt).toLocaleDateString("vi-VN", {
@@ -421,9 +421,9 @@ export default function DashboardPage() {
                   fontFamily: "Inter, Arial, sans-serif",
                   fontSize: "0.875rem",
                   fontWeight: 600,
-                  color: "#fffefb",
-                  backgroundColor: "#ff4f00",
-                  border: "1px solid #ff4f00",
+                  color: "#ffffff",
+                  backgroundColor: "#f97316",
+                  border: "1px solid #f97316",
                   borderRadius: "4px",
                   textDecoration: "none",
                 }}

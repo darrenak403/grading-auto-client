@@ -47,7 +47,7 @@ export default function CreateExamSessionPage() {
             fontWeight: 600,
             textTransform: "uppercase",
             letterSpacing: "0.5px",
-            color: "#939084",
+            color: "#717171",
             marginBottom: "8px",
           }}
         >
@@ -59,7 +59,7 @@ export default function CreateExamSessionPage() {
             fontSize: "2.5rem",
             fontWeight: 500,
             lineHeight: 1.1,
-            color: "#201515",
+            color: "#222222",
             margin: 0,
           }}
         >
@@ -70,8 +70,8 @@ export default function CreateExamSessionPage() {
       <form onSubmit={handleSubmit}>
         <div
           style={{
-            backgroundColor: "#fffefb",
-            border: "1px solid #c5c0b1",
+            backgroundColor: "#ffffff",
+            border: "1px solid #ebebeb",
             borderRadius: "5px",
             padding: "32px",
           }}
@@ -100,7 +100,7 @@ export default function CreateExamSessionPage() {
                 fontFamily: "Inter, Arial, sans-serif",
                 fontSize: "0.875rem",
                 fontWeight: 600,
-                color: "#201515",
+                color: "#222222",
                 marginBottom: "8px",
               }}
             >
@@ -116,9 +116,9 @@ export default function CreateExamSessionPage() {
               placeholder="e.g. PE PRN232 – Ky Xuan 2026"
               style={{
                 width: "100%",
-                backgroundColor: "#fffefb",
-                color: "#201515",
-                border: "1px solid #c5c0b1",
+                backgroundColor: "#ffffff",
+                color: "#222222",
+                border: "1px solid #ebebeb",
                 borderRadius: "5px",
                 padding: "10px 14px",
                 fontFamily: "Inter, Arial, sans-serif",
@@ -127,10 +127,10 @@ export default function CreateExamSessionPage() {
                 transition: "border-color 0.15s ease",
               }}
               onFocus={(e) => {
-                e.target.style.borderColor = "#ff4f00";
+                e.target.style.borderColor = "#f97316";
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = "#c5c0b1";
+                e.target.style.borderColor = "#ebebeb";
               }}
             />
           </div>
@@ -142,7 +142,7 @@ export default function CreateExamSessionPage() {
                 fontFamily: "Inter, Arial, sans-serif",
                 fontSize: "0.875rem",
                 fontWeight: 600,
-                color: "#201515",
+                color: "#222222",
                 marginBottom: "8px",
               }}
             >
@@ -157,9 +157,9 @@ export default function CreateExamSessionPage() {
               rows={4}
               style={{
                 width: "100%",
-                backgroundColor: "#fffefb",
-                color: "#201515",
-                border: "1px solid #c5c0b1",
+                backgroundColor: "#ffffff",
+                color: "#222222",
+                border: "1px solid #ebebeb",
                 borderRadius: "5px",
                 padding: "10px 14px",
                 fontFamily: "Inter, Arial, sans-serif",
@@ -169,10 +169,10 @@ export default function CreateExamSessionPage() {
                 transition: "border-color 0.15s ease",
               }}
               onFocus={(e) => {
-                e.target.style.borderColor = "#ff4f00";
+                e.target.style.borderColor = "#f97316";
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = "#c5c0b1";
+                e.target.style.borderColor = "#ebebeb";
               }}
             />
           </div>
@@ -189,9 +189,9 @@ export default function CreateExamSessionPage() {
                 fontFamily: "Inter, Arial, sans-serif",
                 fontSize: "1rem",
                 fontWeight: 600,
-                color: "#fffefb",
-                backgroundColor: "#ff4f00",
-                border: "1px solid #ff4f00",
+                color: "#ffffff",
+                backgroundColor: "#f97316",
+                border: "1px solid #f97316",
                 borderRadius: "4px",
                 cursor: loading ? "not-allowed" : "pointer",
                 opacity: loading ? 0.6 : 1,
@@ -211,9 +211,9 @@ export default function CreateExamSessionPage() {
                 fontFamily: "Inter, Arial, sans-serif",
                 fontSize: "1rem",
                 fontWeight: 600,
-                color: "#36342e",
-                backgroundColor: "#eceae3",
-                border: "1px solid #c5c0b1",
+                color: "#3f3f46",
+                backgroundColor: "#f4f4f5",
+                border: "1px solid #ebebeb",
                 borderRadius: "8px",
                 cursor: "pointer",
                 transition: "all 0.15s ease",

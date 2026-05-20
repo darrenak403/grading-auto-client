@@ -1,12 +1,7 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, X, Plus } from "lucide-react";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
-import type { TestCase } from "@/types";
+import { X, Plus } from "lucide-react";
 import { TestCaseFormItem } from "../../types";
-
 import { TestCaseFormGrid } from "./TestCaseFormGrid";
 
 export function TestCaseDialog({
@@ -69,11 +64,11 @@ export function TestCaseDialog({
           setItems(formFriendlyItems);
           setJsonError(null);
         } else {
-          setJsonError("JSON phải là một mảng (Array).");
+          setJsonError("JSON must be an array (Array).");
           return;
         }
       } catch (err) {
-        setJsonError("Lỗi cú pháp JSON.");
+        setJsonError("JSON syntax error.");
         return;
       }
     }
@@ -87,10 +82,10 @@ export function TestCaseDialog({
         if (Array.isArray(parsed)) {
           onSave(parsed);
         } else {
-          setJsonError("JSON phải là một mảng (Array).");
+          setJsonError("JSON must be an array (Array).");
         }
       } catch (err) {
-        setJsonError("Lỗi cú pháp JSON.");
+        setJsonError("JSON syntax error.");
       }
     } else {
       onSave(items);
@@ -116,7 +111,7 @@ export function TestCaseDialog({
             className="relative bg-white rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden z-10"
           >
             <div className="flex justify-between items-center p-4 border-b border-[#ebebeb]">
-              <h3 className="text-base font-bold text-[#222222]">Cấu hình Test Cases</h3>
+              <h3 className="text-base font-bold text-[#222222]">Configure Test Cases</h3>
               <button onClick={onClose} className="text-[#717171] hover:text-[#222222] transition-colors"><X size={20} /></button>
             </div>
 
@@ -125,13 +120,13 @@ export function TestCaseDialog({
                 onClick={() => handleTabChange("form")}
                 className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${activeTab === "form" ? "bg-[#fff7ed] text-[#f97316]" : "text-[#717171] hover:bg-[#f7f7f7]"}`}
               >
-                Nhập bằng Form
+                Form Input
               </button>
               <button
                 onClick={() => handleTabChange("json")}
                 className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${activeTab === "json" ? "bg-[#fff7ed] text-[#f97316]" : "text-[#717171] hover:bg-[#f7f7f7]"}`}
               >
-                Nhập JSON thô
+                Raw JSON
               </button>
             </div>
 
@@ -158,7 +153,7 @@ export function TestCaseDialog({
                     onClick={() => setItems([...items, { id: Date.now().toString(), name: "", httpMethod: "GET", urlTemplate: "", expectedStatus: 200, score: 1, order: items.length + 1 }])}
                     className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#f97316] hover:text-[#ea580c] self-start"
                   >
-                    <Plus size={14} /> Thêm Test Case
+                    <Plus size={14} /> Add Test Case
                   </button>
                 </div>
               )}
@@ -167,8 +162,8 @@ export function TestCaseDialog({
                   <div className="flex justify-between">
                     <span className="text-[10px] text-[#717171]">
                       {questionType === 0
-                        ? 'Ví dụ: [{"name": "Get Items", "urlTemplate": "/api/items", "score": 2}]'
-                        : 'Ví dụ: [{"name": "Check title", "value": "Home", "selector": "title"}]'}
+                        ? 'Example: [{"name": "Get Items", "urlTemplate": "/api/items", "score": 2}]'
+                        : 'Example: [{"name": "Check title", "value": "Home", "selector": "title"}]'}
                     </span>
                   </div>
                   <textarea
@@ -185,9 +180,9 @@ export function TestCaseDialog({
             </div>
 
             <div className="p-4 border-t border-[#ebebeb] flex justify-end gap-3 bg-white">
-              <button onClick={onClose} className="px-5 py-2.5 text-xs font-semibold text-[#717171] hover:bg-[#f7f7f7] rounded-lg transition-colors">Hủy</button>
+              <button onClick={onClose} className="px-5 py-2.5 text-xs font-semibold text-[#717171] hover:bg-[#f7f7f7] rounded-lg transition-colors">Cancel</button>
               <button onClick={handleSave} disabled={isSaving} className="px-5 py-2.5 bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-semibold rounded-lg disabled:opacity-50 transition-colors flex items-center gap-2">
-                {isSaving ? "Đang lưu..." : "Xác nhận"}
+                {isSaving ? "Saving..." : "Confirm"}
               </button>
             </div>
           </motion.div>

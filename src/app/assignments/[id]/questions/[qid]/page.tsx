@@ -8,9 +8,11 @@ import type { Question, TestCase, CreateTestCaseRequest } from "@/types";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 export default function QuestionDetailPage() {
   const params = useParams();
+  const confirm = useConfirm();
   const assignmentId = params.id as string;
   const questionId = params.qid as string;
 
@@ -203,7 +205,13 @@ export default function QuestionDetailPage() {
   };
 
   const handleDeleteTestCase = async (testCaseId: string) => {
-    if (!confirm("Delete this test case?")) return;
+    const confirmed = await confirm({
+      title: "Confirm Delete Test Case",
+      description: "Are you sure you want to delete this test case? This action is permanent and cannot be undone.",
+      confirmText: "Delete Test Case",
+      variant: "danger",
+    });
+    if (!confirmed) return;
     try {
       setDeleting(testCaseId);
       const res = await api.deleteTestCase(testCaseId);

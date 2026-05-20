@@ -6,12 +6,13 @@ import { api } from "@/lib";
 import type { ExamSession } from "@/types";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Table } from "@/components/ui/Table";
-import { TableSkeleton } from "@/components/ui";
+import { TableSkeleton, useConfirm } from "@/components/ui";
 import { motion } from "framer-motion";
 
 const MotionLink = motion(Link);
 
 export default function ExamSessionsPage() {
+  const confirm = useConfirm();
   const [sessions, setSessions] = React.useState<ExamSession[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -38,7 +39,13 @@ export default function ExamSessionsPage() {
   };
 
   const handleDelete = async (sessionId: string) => {
-    if (!confirm("Delete this exam session? Assignments and submissions will remain.")) return;
+    const confirmed = await confirm({
+      title: "Confirm Session Deletion",
+      description: "Are you sure you want to delete this exam session? The associated assignments and submissions will still be retained in the system.",
+      confirmText: "Delete Session",
+      variant: "danger",
+    });
+    if (!confirmed) return;
     try {
       setDeleting(sessionId);
       const res = await api.deleteExamSession(sessionId);
@@ -76,7 +83,7 @@ export default function ExamSessionsPage() {
               fontWeight: 600,
               textTransform: "uppercase",
               letterSpacing: "0.5px",
-              color: "#939084",
+              color: "#717171",
               marginBottom: "8px",
             }}
           >
@@ -88,7 +95,7 @@ export default function ExamSessionsPage() {
               fontSize: "2.5rem",
               fontWeight: 500,
               lineHeight: 1.1,
-              color: "#201515",
+              color: "#222222",
               margin: 0,
             }}
           >
@@ -97,7 +104,7 @@ export default function ExamSessionsPage() {
         </div>
         <MotionLink
           href="/exam-sessions/create"
-          whileHover={{ y: -1, scale: 1.01, backgroundColor: "#e04500" }}
+          whileHover={{ y: -1, scale: 1.01, backgroundColor: "#ea580c" }}
           whileTap={{ scale: 0.97 }}
           style={{
             display: "inline-flex",
@@ -106,9 +113,9 @@ export default function ExamSessionsPage() {
             fontFamily: "Inter, Arial, sans-serif",
             fontSize: "1rem",
             fontWeight: 600,
-            color: "#fffefb",
-            backgroundColor: "#ff4f00",
-            border: "1px solid #ff4f00",
+            color: "#ffffff",
+            backgroundColor: "#f97316",
+            border: "1px solid #f97316",
             borderRadius: "4px",
             textDecoration: "none",
             transition: "border-color 0.15s ease",
@@ -149,9 +156,9 @@ export default function ExamSessionsPage() {
                 fontFamily: "Inter, Arial, sans-serif",
                 fontSize: "1rem",
                 fontWeight: 600,
-                color: "#fffefb",
-                backgroundColor: "#ff4f00",
-                border: "1px solid #ff4f00",
+                color: "#ffffff",
+                backgroundColor: "#f97316",
+                border: "1px solid #f97316",
                 borderRadius: "4px",
                 textDecoration: "none",
               }}
@@ -171,7 +178,7 @@ export default function ExamSessionsPage() {
                   <div
                     style={{
                       fontWeight: 600,
-                      color: "#201515",
+                      color: "#222222",
                       fontSize: "1rem",
                     }}
                   >
@@ -181,7 +188,7 @@ export default function ExamSessionsPage() {
                     <div
                       style={{
                         fontSize: "0.8125rem",
-                        color: "#939084",
+                        color: "#717171",
                         marginTop: "2px",
                         maxWidth: "400px",
                         overflow: "hidden",
@@ -202,11 +209,11 @@ export default function ExamSessionsPage() {
                 <span
                   style={{
                     padding: "2px 8px",
-                    backgroundColor: "#eceae3",
+                    backgroundColor: "#f4f4f5",
                     borderRadius: "4px",
                     fontSize: "0.8125rem",
                     fontWeight: 600,
-                    color: "#36342e",
+                    color: "#3f3f46",
                   }}
                 >
                   {s.code || s.id.slice(0, 8)}
@@ -217,7 +224,7 @@ export default function ExamSessionsPage() {
               key: "assignments",
               header: "Assignments",
               render: (s) => (
-                <span style={{ color: "#36342e", fontWeight: 500 }}>
+                <span style={{ color: "#3f3f46", fontWeight: 500 }}>
                   {s.assignments?.length ?? 0}
                 </span>
               ),
@@ -226,8 +233,8 @@ export default function ExamSessionsPage() {
               key: "createdAt",
               header: "Created",
               render: (s) => (
-                <span style={{ color: "#939084", fontSize: "0.875rem" }}>
-                  {new Date(s.createdAt).toLocaleDateString("vi-VN", {
+                <span style={{ color: "#717171", fontSize: "0.875rem" }}>
+                  {new Date(s.createdAt).toLocaleDateString("en-US", {
                     day: "2-digit",
                     month: "short",
                     year: "numeric",
@@ -249,9 +256,9 @@ export default function ExamSessionsPage() {
                       fontFamily: "Inter, Arial, sans-serif",
                       fontSize: "0.8125rem",
                       fontWeight: 600,
-                      color: "#fffefb",
-                      backgroundColor: "#ff4f00",
-                      border: "1px solid #ff4f00",
+                      color: "#ffffff",
+                      backgroundColor: "#f97316",
+                      border: "1px solid #f97316",
                       borderRadius: "4px",
                       textDecoration: "none",
                     }}
@@ -270,7 +277,7 @@ export default function ExamSessionsPage() {
                       fontWeight: 600,
                       color: "#dc2626",
                       backgroundColor: "transparent",
-                      border: "1px solid #c5c0b1",
+                      border: "1px solid #ebebeb",
                       borderRadius: "4px",
                       cursor: deleting === s.id ? "not-allowed" : "pointer",
                       opacity: deleting === s.id ? 0.6 : 1,

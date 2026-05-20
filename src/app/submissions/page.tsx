@@ -1,17 +1,18 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
+import { Trash2, Eye, Filter } from "lucide-react";
 import { api } from "@/lib";
 import type { Submission } from "@/types";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { TableSkeleton } from "@/components/ui";
-import { motion } from "framer-motion";
-
-const MotionLink = motion(Link);
+import { TableSkeleton, useConfirm } from "@/components/ui";
+import { Table } from "@/components/ui/Table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DetailSubmissionDialog } from "@/components/shared/DetailSubmissionDialog";
 
 export default function SubmissionsPage() {
+  const confirm = useConfirm();
   const [submissions, setSubmissions] = React.useState<Submission[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -19,20 +20,16 @@ export default function SubmissionsPage() {
   const [assignments, setAssignments] = React.useState<
     { id: string; code: string }[]
   >([]);
+  const [selectedSubmissionId, setSelectedSubmissionId] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
-    loadAssignments();
-    loadSubmissions();
-  }, []);
-
-  const loadAssignments = async () => {
+  const loadAssignments = React.useCallback(async () => {
     const res = await api.getAssignments();
     if (res.status && res.data) {
       setAssignments(res.data.map((a) => ({ id: a.id, code: a.code })));
     }
-  };
+  }, []);
 
-  const loadSubmissions = async () => {
+  const loadSubmissions = React.useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -70,269 +67,211 @@ export default function SubmissionsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filterAssignmentId]);
+
+  React.useEffect(() => {
+    loadAssignments();
+  }, [loadAssignments]);
+
+  React.useEffect(() => {
+    loadSubmissions();
+  }, [loadSubmissions]);
 
   const handleDelete = async (submissionId: string) => {
-    if (!confirm("Delete this submission?")) return;
+    const confirmed = await confirm({
+      title: "Confirm Submission Deletion",
+      description:
+        "Are you sure you want to delete this submission? This action is permanent and cannot be undone.",
+      confirmText: "Delete Submission",
+      variant: "danger",
+    });
+    if (!confirmed) return;
     try {
       const res = await api.deleteSubmission(submissionId);
       if (res.status) {
-        setSubmissions(submissions.filter((s) => s.id !== submissionId));
+        setSubmissions((prev) => prev.filter((s) => s.id !== submissionId));
       }
     } catch {
       // ignore
     }
   };
 
+  const columns = [
+    {
+      key: "student",
+      header: "Student",
+      render: (s: Submission) => (
+        <div>
+          <div className="font-semibold text-[#222222]">{s.studentCode}</div>
+          <div className="text-[10px] text-[#717171]">{s.username}</div>
+        </div>
+      ),
+    },
+    {
+      key: "assignment",
+      header: "Assignment",
+      render: (s: Submission) => {
+        const assignmentObj = assignments.find((a) => a.id === s.assignmentId);
+        const code = assignmentObj ? assignmentObj.code : s.assignmentId.slice(0, 8);
+        return (
+          <span className="px-2.5 py-1 bg-[#f4f4f5] border border-[#ebebeb] rounded-md text-xs font-semibold text-[#3f3f46]">
+            {code}
+          </span>
+        );
+      },
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (s: Submission) => <StatusBadge status={s.status} />,
+    },
+    {
+      key: "artifact",
+      header: "Artifact",
+      render: (s: Submission) => (
+        <span
+          className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${s.hasArtifact
+            ? "bg-[#fff7ed] text-[#ea580c] border-[#ffedd5]"
+            : "bg-red-50 text-red-600 border-red-100"
+            }`}
+        >
+          {s.hasArtifact ? "Attached" : "None"}
+        </span>
+      ),
+    },
+    {
+      key: "score",
+      header: "Score",
+      render: (s: Submission) =>
+        s.totalScore !== undefined ? (
+          <span
+            className={`font-semibold ${(s.totalScore ?? 0) / (s.maxScore ?? 1) >= 0.5
+              ? "text-emerald-600"
+              : "text-[#f97316]"
+              }`}
+          >
+            {s.totalScore} / {s.maxScore}
+          </span>
+        ) : (
+          <span className="text-[#717171]">-</span>
+        ),
+    },
+    {
+      key: "submitted",
+      header: "Submitted At",
+      render: (s: Submission) => (
+        <span className="text-xs text-[#717171]">
+          {new Date(s.createdAt).toLocaleDateString("en-US", {
+            day: "2-digit",
+            month: "short",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      render: (s: Submission) => (
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setSelectedSubmissionId(s.id)}
+            className="px-2.5 py-1.5 bg-white border border-[#dddddd] hover:border-[#f97316] text-[10px] font-semibold text-[#222222] rounded-md transition-all select-none cursor-pointer hover:bg-[#fff7ed] hover:text-[#ea580c] flex items-center gap-1.5"
+          >
+            View
+          </button>
+          <button
+            onClick={() => handleDelete(s.id)}
+            className="p-1.5 text-[#717171] hover:text-[#f97316] hover:bg-[#fff7ed] rounded-full transition-all cursor-pointer active:scale-95 flex items-center justify-center"
+            title="Delete Submission"
+          >
+            <Trash2 size={13} className="stroke-[1.5]" />
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <div style={{ padding: "40px 24px", maxWidth: "1200px", margin: "0 auto" }}>
+    <div className="py-10 px-6 max-w-6xl mx-auto w-full font-sans select-none">
       {/* Page Header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          marginBottom: "32px",
-          flexWrap: "wrap",
-          gap: "16px",
-        }}
-      >
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <p
-            style={{
-              fontFamily: "Inter, Arial, sans-serif",
-              fontSize: "0.875rem",
-              fontWeight: 600,
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-              color: "#939084",
-              marginBottom: "8px",
-            }}
-          >
+          <p className="text-xs font-semibold text-[#717171] uppercase tracking-wider mb-2">
             03 / Submissions
           </p>
-          <h1
-            style={{
-              fontFamily: "Inter, Arial, sans-serif",
-              fontSize: "2.5rem",
-              fontWeight: 500,
-              lineHeight: 1.1,
-              color: "#201515",
-              margin: 0,
-            }}
-          >
-            Submissions
+          <h1 className="text-3xl font-semibold text-[#222222] tracking-tight">
+            Student Submissions
           </h1>
+          <p className="text-sm text-[#717171] mt-1.5 leading-relaxed">
+            Manage and view detailed progress and grading results of student submissions.
+          </p>
         </div>
       </div>
 
       {error && (
-        <div
-          style={{
-            padding: "16px",
-            backgroundColor: "#fef2f2",
-            border: "1px solid #fecaca",
-            borderRadius: "5px",
-            color: "#dc2626",
-            marginBottom: "24px",
-          }}
-        >
+        <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-800 text-sm mb-6">
           {error}
         </div>
       )}
 
       {/* Filter */}
-      <div style={{ marginBottom: "24px" }}>
-        <select
-          value={filterAssignmentId}
-          onChange={(e) => {
-            setFilterAssignmentId(e.target.value);
-            loadSubmissions();
-          }}
-          style={{
-            padding: "8px 12px",
-            backgroundColor: "#fffefb",
-            color: "#201515",
-            border: "1px solid #c5c0b1",
-            borderRadius: "5px",
-            fontFamily: "Inter, Arial, sans-serif",
-            fontSize: "0.9375rem",
-            outline: "none",
-            minWidth: "200px",
+      <div className="mb-4">
+        <Select
+          value={filterAssignmentId || "all"}
+          onValueChange={(val) => {
+            setFilterAssignmentId(val === "all" ? "" : val);
           }}
         >
-          <option value="">All Assignments</option>
-          {assignments.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.code}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="w-[180px] bg-white border border-[#ebebeb] text-[#222222] rounded-xl px-4 py-2.5 text-xs outline-none transition-all focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316] cursor-pointer hover:border-[#d4d4d8] font-semibold">
+            <SelectValue placeholder="Filter by assignment" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Assignments</SelectItem>
+            {assignments.map((a) => (
+              <SelectItem key={a.id} value={a.id}>
+                {a.code}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {loading ? (
-        <TableSkeleton rows={5} columns={7} />
+        <div className="mt-4">
+          <TableSkeleton rows={5} columns={7} />
+        </div>
       ) : submissions.length === 0 ? (
         <EmptyState
-          title="No submissions"
-          description="Upload submissions from an assignment's submissions tab."
+          title="No Submissions Yet"
+          description={
+            filterAssignmentId
+              ? "No student has submitted work for this assignment yet."
+              : "Please upload submissions from the submissions tab in assignment details."
+          }
         />
       ) : (
-        <div style={{ overflowX: "auto" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              fontFamily: "Inter, Arial, sans-serif",
-            }}
-          >
-            <thead>
-              <tr
-                style={{
-                  borderBottom: "1px solid #c5c0b1",
-                  backgroundColor: "#eceae3",
-                }}
-              >
-                {[
-                  "Student",
-                  "Assignment",
-                  "Status",
-                  "Artifact",
-                  "Score",
-                  "Submitted",
-                  "Actions",
-                ].map((h) => (
-                  <th
-                    key={h}
-                    style={{
-                      padding: "12px 16px",
-                      textAlign: "left",
-                      fontSize: "0.75rem",
-                      fontWeight: 600,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                      color: "#36342e",
-                    }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {submissions.map((s) => (
-                <tr
-                  key={s.id}
-                  style={{ borderBottom: "1px solid #eceae3" }}
-                >
-                  <td style={{ padding: "12px 16px" }}>
-                    <div style={{ fontWeight: 600, color: "#201515" }}>
-                      {s.studentCode}
-                    </div>
-                    <div style={{ fontSize: "0.8125rem", color: "#939084" }}>
-                      {s.username}
-                    </div>
-                  </td>
-                  <td style={{ padding: "12px 16px" }}>
-                    <span
-                      style={{
-                        padding: "2px 8px",
-                        backgroundColor: "#eceae3",
-                        borderRadius: "4px",
-                        fontSize: "0.8125rem",
-                        fontWeight: 600,
-                        color: "#36342e",
-                      }}
-                    >
-                      {s.assignmentId.slice(0, 8)}
-                    </span>
-                  </td>
-                  <td style={{ padding: "12px 16px" }}>
-                    <StatusBadge status={s.status} />
-                  </td>
-                  <td style={{ padding: "12px 16px" }}>
-                    <span
-                      style={{
-                        fontWeight: 600,
-                        color: s.hasArtifact ? "#166534" : "#dc2626",
-                        fontSize: "0.875rem",
-                      }}
-                    >
-                      {s.hasArtifact ? "Yes" : "No"}
-                    </span>
-                  </td>
-                  <td style={{ padding: "12px 16px" }}>
-                    {s.totalScore !== undefined ? (
-                      <span
-                        style={{
-                          fontWeight: 600,
-                          color:
-                            (s.totalScore ?? 0) / (s.maxScore ?? 1) >= 0.5
-                              ? "#166534"
-                              : "#dc2626",
-                        }}
-                      >
-                        {s.totalScore} / {s.maxScore}
-                      </span>
-                    ) : (
-                      <span style={{ color: "#939084" }}>-</span>
-                    )}
-                  </td>
-                  <td style={{ padding: "12px 16px" }}>
-                    <span style={{ color: "#939084", fontSize: "0.875rem" }}>
-                      {new Date(s.createdAt).toLocaleDateString("vi-VN", {
-                        day: "2-digit",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </td>
-                  <td style={{ padding: "12px 16px" }}>
-                    <div style={{ display: "flex", gap: "8px" }}>
-                      <MotionLink
-                        href={`/submissions/${s.id}`}
-                        whileHover={{ scale: 1.04 }}
-                        whileTap={{ scale: 0.95 }}
-                        style={{
-                          padding: "4px 10px",
-                          fontSize: "0.8125rem",
-                          fontWeight: 600,
-                          color: "#fffefb",
-                          backgroundColor: "#ff4f00",
-                          border: "1px solid #ff4f00",
-                          borderRadius: "4px",
-                          textDecoration: "none",
-                        }}
-                      >
-                        View
-                      </MotionLink>
-                      <motion.button
-                        onClick={() => handleDelete(s.id)}
-                        whileHover={{ scale: 1.04 }}
-                        whileTap={{ scale: 0.95 }}
-                        style={{
-                          padding: "4px 10px",
-                          fontSize: "0.8125rem",
-                          fontWeight: 600,
-                          color: "#dc2626",
-                          backgroundColor: "transparent",
-                          border: "1px solid #c5c0b1",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Delete
-                      </motion.button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="border border-[#ebebeb] rounded-2xl overflow-hidden bg-white shadow-sm shadow-black/5">
+          <Table
+            columns={columns}
+            data={submissions}
+            maxHeight={550}
+            keyExtractor={(s: Submission) => s.id}
+            emptyMessage="No submissions found."
+            borderless={true}
+          />
         </div>
       )}
+
+      <DetailSubmissionDialog
+        open={selectedSubmissionId !== null}
+        submissionId={selectedSubmissionId}
+        onOpenChange={(open) => {
+          if (!open) setSelectedSubmissionId(null);
+        }}
+        onRefresh={loadSubmissions}
+      />
     </div>
   );
 }

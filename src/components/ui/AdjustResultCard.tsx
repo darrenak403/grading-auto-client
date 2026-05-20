@@ -4,7 +4,12 @@ import * as React from "react";
 import { api } from "@/lib";
 import type { QuestionResult } from "@/types";
 
-export function AdjustResultCard({ result }: { result: QuestionResult }) {
+interface AdjustResultCardProps {
+  result: QuestionResult;
+  onAdjusted?: () => void;
+}
+
+export function AdjustResultCard({ result, onAdjusted }: AdjustResultCardProps) {
   const [adjustedScore, setAdjustedScore] = React.useState(
     result.adjustedScore ?? result.score
   );
@@ -14,6 +19,11 @@ export function AdjustResultCard({ result }: { result: QuestionResult }) {
   const [adjustedBy, setAdjustedBy] = React.useState("");
   const [saving, setSaving] = React.useState(false);
   const [message, setMessage] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    setAdjustedScore(result.adjustedScore ?? result.score);
+    setAdjustReason(result.adjustReason || "");
+  }, [result]);
 
   const handleAdjust = React.useCallback(async () => {
     try {
@@ -25,16 +35,19 @@ export function AdjustResultCard({ result }: { result: QuestionResult }) {
         adjustedBy: adjustedBy || undefined,
       });
       if (res.status) {
-        setMessage("Adjusted successfully");
+        setMessage("Score updated successfully");
+        if (onAdjusted) {
+          onAdjusted();
+        }
       } else {
-        setMessage(res.message || "Failed");
+        setMessage(res.message || "Failed to update score");
       }
     } catch {
-      setMessage("Error");
+      setMessage("Server connection error occurred");
     } finally {
       setSaving(false);
     }
-  }, [result.id, adjustedScore, adjustReason, adjustedBy]);
+  }, [result.id, adjustedScore, adjustReason, adjustedBy, onAdjusted]);
 
   const handleRemoveAdjustment = React.useCallback(async () => {
     try {
@@ -44,93 +57,46 @@ export function AdjustResultCard({ result }: { result: QuestionResult }) {
       if (res.status) {
         setAdjustedScore(result.score);
         setAdjustReason("");
-        setMessage("Adjustment removed");
+        setMessage("Score adjustment deleted");
+        if (onAdjusted) {
+          onAdjusted();
+        }
+      } else {
+        setMessage(res.message || "Failed to delete score adjustment");
       }
     } catch {
-      setMessage("Error");
+      setMessage("Server connection error occurred");
     } finally {
       setSaving(false);
     }
-  }, [result.id, result.score]);
+  }, [result.id, result.score, onAdjusted]);
 
   return (
-    <div
-      style={{
-        backgroundColor: "#fffefb",
-        border: "1px solid #c5c0b1",
-        borderRadius: "5px",
-        padding: "20px",
-        marginBottom: "12px",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "12px",
-        }}
-      >
-        <h4
-          style={{
-            fontFamily: "Inter, Arial, sans-serif",
-            fontSize: "1rem",
-            fontWeight: 600,
-            color: "#201515",
-            margin: 0,
-          }}
-        >
+    <div className="bg-white border border-[#ebebeb] rounded-2xl p-5 mb-4 shadow-sm shadow-black/5 transition-all hover:shadow-md hover:shadow-black/5">
+      <div className="flex justify-between items-center mb-4">
+        <h4 className="text-sm font-semibold text-[#222222]">
           {result.questionTitle || `Question ${result.questionId}`}
         </h4>
-        <span
-          style={{
-            fontFamily: "Inter, Arial, sans-serif",
-            fontSize: "0.9375rem",
-            fontWeight: 600,
-            color: "#201515",
-          }}
-        >
-          Current: {result.finalScore} / {result.maxScore}
-        </span>
+        <div className="text-xs font-semibold text-[#717171]">
+          Original score: <span className="text-[#222222]">{result.score} / {result.maxScore}</span>
+          {result.adjustedScore !== undefined && (
+            <span className="ml-2 pl-2 border-l border-gray-200 text-[#f97316]">
+              Currently adjusting: {result.adjustedScore}
+            </span>
+          )}
+        </div>
       </div>
 
       {message && (
-        <div
-          style={{
-            padding: "8px 12px",
-            backgroundColor: "#f0fdf4",
-            border: "1px solid #bbf7d0",
-            borderRadius: "4px",
-            color: "#166534",
-            fontFamily: "Inter, Arial, sans-serif",
-            fontSize: "0.8125rem",
-            marginBottom: "12px",
-          }}
-        >
+        <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-800 text-xs mb-4 animate-in fade-in slide-in-from-top-1 duration-200">
           {message}
         </div>
       )}
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "100px 1fr 150px",
-          gap: "12px",
-          alignItems: "end",
-        }}
-      >
-        <div>
-          <label
-            style={{
-              display: "block",
-              fontFamily: "Inter, Arial, sans-serif",
-              fontSize: "0.75rem",
-              fontWeight: 600,
-              color: "#939084",
-              marginBottom: "4px",
-            }}
-          >
-            Score
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+        <div className="md:col-span-3">
+          <label className="block text-[10px] font-semibold text-[#717171] uppercase tracking-wider mb-2">
+            New Score
           </label>
           <input
             type="number"
@@ -139,90 +105,36 @@ export function AdjustResultCard({ result }: { result: QuestionResult }) {
             step={0.5}
             value={adjustedScore}
             onChange={(e) => setAdjustedScore(Number(e.target.value))}
-            style={{
-              width: "100%",
-              backgroundColor: "#fffefb",
-              color: "#201515",
-              border: "1px solid #c5c0b1",
-              borderRadius: "5px",
-              padding: "6px 10px",
-              fontFamily: "Inter, Arial, sans-serif",
-              fontSize: "0.9375rem",
-              outline: "none",
-            }}
-            onFocus={(e) => { e.target.style.borderColor = "#ff4f00"; }}
-            onBlur={(e) => { e.target.style.borderColor = "#c5c0b1"; }}
+            className="w-full bg-white border border-[#ebebeb] text-[#222222] rounded-xl px-3.5 py-2.5 text-xs focus:outline-none transition-all focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/20 placeholder:text-[#a1a1aa] hover:border-[#d4d4d8] font-medium h-[38px]"
           />
         </div>
-        <div>
-          <label
-            style={{
-              display: "block",
-              fontFamily: "Inter, Arial, sans-serif",
-              fontSize: "0.75rem",
-              fontWeight: 600,
-              color: "#939084",
-              marginBottom: "4px",
-            }}
-          >
-            Reason
+        <div className="md:col-span-6">
+          <label className="block text-[10px] font-semibold text-[#717171] uppercase tracking-wider mb-2">
+            Adjustment Reason
           </label>
           <input
             type="text"
             value={adjustReason}
             onChange={(e) => setAdjustReason(e.target.value)}
-            placeholder="Reason for adjustment"
-            style={{
-              width: "100%",
-              backgroundColor: "#fffefb",
-              color: "#201515",
-              border: "1px solid #c5c0b1",
-              borderRadius: "5px",
-              padding: "6px 10px",
-              fontFamily: "Inter, Arial, sans-serif",
-              fontSize: "0.9375rem",
-              outline: "none",
-            }}
-            onFocus={(e) => { e.target.style.borderColor = "#ff4f00"; }}
-            onBlur={(e) => { e.target.style.borderColor = "#c5c0b1"; }}
+            placeholder="Enter reason for score change..."
+            className="w-full bg-white border border-[#ebebeb] text-[#222222] rounded-xl px-3.5 py-2.5 text-xs focus:outline-none transition-all focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/20 placeholder:text-[#a1a1aa] hover:border-[#d4d4d8] font-medium h-[38px]"
           />
         </div>
-        <div style={{ display: "flex", gap: "8px" }}>
+        <div className="flex gap-2 md:col-span-3 w-full">
           <button
             onClick={handleAdjust}
             disabled={saving}
-            style={{
-              padding: "6px 12px",
-              fontFamily: "Inter, Arial, sans-serif",
-              fontSize: "0.8125rem",
-              fontWeight: 600,
-              color: "#fffefb",
-              backgroundColor: "#ff4f00",
-              border: "1px solid #ff4f00",
-              borderRadius: "4px",
-              cursor: saving ? "not-allowed" : "pointer",
-              opacity: saving ? 0.6 : 1,
-            }}
+            className="flex-1 w-full px-4 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white rounded-lg text-xs font-semibold transition-all active:scale-[0.97] cursor-pointer disabled:opacity-50 disabled:pointer-events-none h-[38px] flex items-center justify-center select-none"
           >
-            {saving ? "..." : "Adjust"}
+            {saving ? "Saving..." : "Update"}
           </button>
           {result.adjustedScore !== undefined && (
             <button
               onClick={handleRemoveAdjustment}
               disabled={saving}
-              style={{
-                padding: "6px 12px",
-                fontFamily: "Inter, Arial, sans-serif",
-                fontSize: "0.8125rem",
-                fontWeight: 600,
-                color: "#dc2626",
-                backgroundColor: "transparent",
-                border: "1px solid #c5c0b1",
-                borderRadius: "4px",
-                cursor: saving ? "not-allowed" : "pointer",
-              }}
+              className="flex-1 w-full px-4 py-2 bg-transparent hover:bg-red-50 text-red-600 border border-[#ebebeb] hover:border-red-100 rounded-lg text-xs font-semibold transition-all active:scale-[0.97] cursor-pointer disabled:opacity-50 disabled:pointer-events-none h-[38px] flex items-center justify-center select-none"
             >
-              Remove
+              Cancel
             </button>
           )}
         </div>

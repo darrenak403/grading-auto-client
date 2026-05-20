@@ -21,21 +21,21 @@ export function WizardHeader() {
 
           {/* Để căn lề đúng khi ẩn logo trên desktop */}
           <div className="hidden md:block text-sm text-[#717171] font-medium">
-            Trang cấu hình chi tiết bài tập
+            Assignment Configuration Details
           </div>
 
           <div className="flex items-center gap-4">
             {/* Badge ngữ cảnh hiển thị mã bài tập */}
             <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-[#fff7ed] border border-[#ffedd5] rounded-full text-xs font-semibold text-[#ea580c]">
               <span className="w-1.5 h-1.5 rounded-full bg-[#f97316] animate-pulse" />
-              <span>Đang cấu hình: {assignment.code || assignment.title}</span>
+              <span>Configuring: {assignment.code || assignment.title}</span>
             </div>
 
             <Link
               href={assignment.examSessionId ? `/exam-sessions/${assignment.examSessionId}` : "/exam-sessions"}
               className="inline-flex items-center gap-2 px-5 py-2.5 border border-[#dddddd] rounded-full text-sm font-semibold text-[#222222] bg-white hover:border-[#f97316] hover:bg-[#fff7ed] hover:text-[#ea580c] transition-all cursor-pointer active:scale-95"
             >
-              <span>Lưu và thoát</span>
+              <span>Save and Exit</span>
             </Link>
           </div>
         </header>;

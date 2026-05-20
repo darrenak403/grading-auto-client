@@ -6,11 +6,11 @@ export function WizardSidebar() {
   const { currentStep, hasParticipants, hasResources, hasQuestions, submissions, setDirection, setCurrentStep, exportJob } = useAssignmentWizard();
 
   const steps = [
-    { label: 'Import học viên', desc: 'Tải lên danh sách học viên (.csv)', done: hasParticipants },
-    { label: 'Tài nguyên đề thi', desc: 'Đính kèm Database, API URL & ZIP', done: hasResources },
-    { label: 'Thiết lập câu hỏi', desc: 'Thiết lập danh sách các câu hỏi', done: hasQuestions },
-    { label: 'Tải bài & Chấm điểm', desc: 'Tải ZIP bài làm & Chấm điểm tự động', done: submissions.length > 0 },
-    { label: 'Kết xuất bảng điểm', desc: 'Kiểm tra kết quả & Kết xuất Excel', done: exportJob?.status === 'Done' },
+    { label: 'Import Student List', desc: 'Upload student list (.csv)', done: hasParticipants },
+    { label: 'Exam Resources', desc: 'Attach Database, API URL & ZIP', done: hasResources },
+    { label: 'Configure Questions', desc: 'Set up the list of questions', done: hasQuestions },
+    { label: 'Upload & Grade', desc: 'Upload submissions ZIP & auto grade', done: submissions.length > 0 },
+    { label: 'Export Gradebook', desc: 'Review results & export to Excel', done: exportJob?.status === 'Done' },
   ];
 
   return <aside className="hidden md:flex flex-col w-[260px] bg-[#fcfcfc] border-r border-[#ebebeb] shrink-0 select-none h-full">

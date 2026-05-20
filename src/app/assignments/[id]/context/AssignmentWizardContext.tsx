@@ -80,7 +80,7 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
         parsedInput = item.input;
       }
     }
-    
+
     let parsedExpectedBody: any = undefined;
     if (item.expectedBody) {
       if (typeof item.expectedBody === "string") {
@@ -155,16 +155,16 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
             setQuestionTestCases((prev) => ({ ...prev, [tcDialogConfig.targetId]: tcRes.data || [] }));
           }
           openConfirm({
-            title: "Thành công",
-            description: `Đã lưu thành công ${requests.length} Test Cases!`,
+            title: "Success",
+            description: `Saved ${requests.length} Test Cases successfully!`,
             showCancel: false,
             onConfirm: () => { },
           });
           setTcDialogConfig(prev => ({ ...prev, isOpen: false }));
         } else {
           openConfirm({
-            title: "Lỗi",
-            description: res.message || "Không thể lưu test cases.",
+            title: "Error",
+            description: res.message || "Could not save test cases.",
             showCancel: false,
             onConfirm: () => { },
           });
@@ -172,8 +172,8 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
       } catch (err) {
         console.error(err);
         openConfirm({
-          title: "Lỗi",
-          description: "Lỗi hệ thống khi lưu Test Cases.",
+          title: "Error",
+          description: "System error while saving Test Cases.",
           showCancel: false,
           onConfirm: () => { },
         });
@@ -192,12 +192,13 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
   const [submissions, setSubmissions] = React.useState<Submission[]>([]);
   const [loadingSubmissions, setLoadingSubmissions] = React.useState(false);
   const [triggering, setTriggering] = React.useState<string | null>(null);
+  const [selectedSubmissionId, setSelectedSubmissionId] = React.useState<string | null>(null);
 
   // Export tab state
   const [exportJob, setExportJob] = React.useState<ExportJob | null>(null);
   const [exporting, setExporting] = React.useState(false);
   const [exportError, setExportError] = React.useState<string | null>(null);
-  const [gradingRound, setGradingRound] = React.useState("Lan 1");
+  const [gradingRound, setGradingRound] = React.useState("Round 1");
 
   // Participants
   const [participants, setParticipants] = React.useState<
@@ -278,7 +279,7 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
   // --- Setup handlers ---
   const handleSaveSetup = React.useCallback(async () => {
     if (!sqlFile && !givenApiBaseUrl && !givenZipFile) {
-      setSetupMessage("Vui lòng chọn ít nhất 1 trong 3: file SQL, Given API URL, hoặc given.zip");
+      setSetupMessage("Please choose at least 1 of 3: SQL file, Given API URL, or given.zip");
       return;
     }
     try {
@@ -292,14 +293,14 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
       );
       if (res.status && res.data) {
         setAssignment(res.data);
-        setSetupMessage("Tài nguyên đã được tải lên thành công!");
+        setSetupMessage("Resources uploaded successfully!");
         setSqlFile(null);
         setGivenZipFile(null);
       } else {
-        setSetupMessage(res.message || "Lưu tài nguyên thất bại");
+        setSetupMessage(res.message || "Failed to save resources");
       }
     } catch {
-      setSetupMessage("Lỗi hệ thống khi lưu tài nguyên");
+      setSetupMessage("System error while saving resources");
     } finally {
       setSavingSetup(false);
     }
@@ -311,14 +312,14 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
       setExportError(null);
       const res = await api.triggerGrading(assignmentId, gradingRound);
       if (res.status) {
-        setExportError("Đã kích hoạt Worker chấm điểm hàng loạt thành công!");
+        setExportError("Bulk grading worker triggered successfully!");
         setExportJob(null);
         await loadSubmissions();
       } else {
-        setExportError(res.message || "Không thể kích hoạt chấm điểm");
+        setExportError(res.message || "Failed to trigger grading");
       }
     } catch {
-      setExportError("Lỗi kết nối khi kích hoạt chấm điểm");
+      setExportError("Connection error while triggering grading");
     } finally {
       setExporting(false);
     }
@@ -416,10 +417,10 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
                 await api.createTestCases(createdQ.id, requests);
               }
             } catch (err) {
-              console.error("Lỗi gửi test cases cho câu hỏi " + q.title, err);
+              console.error("Error sending test cases for question " + q.title, err);
               openConfirm({
-                title: "Lỗi tạo Test Cases",
-                description: `Câu hỏi "${q.title}" được tạo thành công, nhưng Test Cases gặp lỗi khi lưu. Vui lòng kiểm tra lại.`,
+                title: "Error Creating Test Cases",
+                description: `Question "${q.title}" created successfully, but there was an error saving Test Cases. Please check again.`,
                 showCancel: false,
                 onConfirm: () => { },
               });
@@ -453,8 +454,8 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
 
   const handleDeleteQuestion = React.useCallback((questionId: string) => {
     openConfirm({
-      title: "Xác nhận xóa câu hỏi",
-      description: "Bạn có chắc chắn muốn xóa câu hỏi này không? Thao tác này cũng sẽ xóa toàn bộ test cases liên quan.",
+      title: "Confirm Delete Question",
+      description: "Are you sure you want to delete this question? This action will also delete all associated test cases.",
       variant: "destructive",
       onConfirm: async () => {
         const res = await api.deleteQuestion(questionId);
@@ -468,8 +469,8 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
   // --- Submission handlers ---
   const handleDeleteSubmission = React.useCallback((submissionId: string) => {
     openConfirm({
-      title: "Xác nhận xóa bài nộp",
-      description: "Bạn có chắc chắn muốn xóa bài nộp này không?",
+      title: "Confirm Delete Submission",
+      description: "Are you sure you want to delete this submission?",
       variant: "destructive",
       onConfirm: async () => {
         const res = await api.deleteSubmission(submissionId);
@@ -486,8 +487,8 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
       const res = await api.triggerGradingSubmission(submissionId);
       if (res.status) {
         openConfirm({
-          title: "Thông báo",
-          description: "Đã gửi yêu cầu chấm điểm bài làm này thành công!",
+          title: "Notification",
+          description: "Grading request submitted successfully for this submission!",
           showCancel: false,
           onConfirm: () => { },
         });
@@ -500,8 +501,8 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
 
   const handleDeleteTestCaseInline = React.useCallback((questionId: string, testCaseId: string) => {
     openConfirm({
-      title: "Xác nhận xóa Test Case",
-      description: "Bạn có chắc chắn muốn xóa Test Case này khỏi câu hỏi không?",
+      title: "Confirm Delete Test Case",
+      description: "Are you sure you want to delete this Test Case from the question?",
       variant: "destructive",
       onConfirm: async () => {
         const res = await api.deleteTestCase(testCaseId);
@@ -527,14 +528,14 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
       setBulkResult(null);
       const res = await api.bulkUpload(assignmentId, fileToUpload, gradingRound || undefined);
       if (res.status && res.data) {
-        setBulkResult(`Đã tạo: ${res.data.created}, Đã phân tích: ${res.data.parsed}, Thiếu thông tin: ${res.data.missing}`);
+        setBulkResult(`Created: ${res.data.created}, Parsed: ${res.data.parsed}, Missing info: ${res.data.missing}`);
         loadSubmissions();
         setBulkFile(null);
       } else {
-        setBulkResult(res.message || "Tải lên tệp zip thất bại");
+        setBulkResult(res.message || "Failed to upload zip file");
       }
     } catch {
-      setBulkResult("Lỗi trong quá trình upload tệp zip bài làm");
+      setBulkResult("Error during bulk upload zip file");
     } finally {
       setUploading(false);
     }
@@ -548,15 +549,15 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
       setImportResult(null);
       const res = await api.importParticipants(assignmentId, fileToUpload);
       if (res.status && res.data) {
-        setImportResult(`Đã import thành công: ${res.data.created} học viên (Bỏ qua: ${res.data.skipped})`);
+        setImportResult(`Successfully imported: ${res.data.created} students (Skipped: ${res.data.skipped})`);
         await loadParticipants();
         setImportFile(null);
         setShowUploadForm(false);
       } else {
-        setImportResult(res.message || "Import danh sách thất bại");
+        setImportResult(res.message || "Failed to import participants");
       }
     } catch {
-      setImportResult("Lỗi hệ thống khi import danh sách");
+      setImportResult("System error during participants import");
     } finally {
       setUploading(false);
     }
@@ -572,10 +573,10 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
         setExportJob(res.data);
         startPolling(res.data.id);
       } else {
-        setExportError(res.message || "Tạo xuất dữ liệu thất bại");
+        setExportError(res.message || "Failed to create export");
       }
     } catch {
-      setExportError("Lỗi hệ thống khi tạo yêu cầu xuất Excel");
+      setExportError("System error while creating Excel export request");
     } finally {
       setExporting(false);
     }
@@ -597,7 +598,7 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
         URL.revokeObjectURL(url);
       }
     } catch {
-      setExportError("Tải xuống Excel thất bại");
+      setExportError("Failed to download Excel");
     }
   };
 
@@ -608,7 +609,7 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
     };
   }, []);
 
-  
+
 
   return (
     <AssignmentWizardContext.Provider value={{
@@ -624,6 +625,7 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
       handleSaveTestCases, expandedQuestions, handleToggleDetail,
       questionTestCases, setQuestionTestCases, loadingTestCases,
       submissions, setSubmissions, loadingSubmissions, triggering, handleDeleteSubmission, handleTriggerGradingForSubmission, handleDeleteTestCaseInline,
+      selectedSubmissionId, setSelectedSubmissionId,
       exportJob, exporting, exportError, gradingRound, setGradingRound, handleCreateExport, handleDownloadExport,
       participants, setParticipants, bulkFile, setBulkFile, bulkResult, setBulkResult,
       importFile, setImportFile, importResult, setImportResult,

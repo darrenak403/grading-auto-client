@@ -15,21 +15,25 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Table } from "@/components/ui/Table";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
+import { DetailSubmissionDialog } from "@/components/shared/DetailSubmissionDialog";
 
 type Tab = "assignments" | "participants" | "results" | "export";
 
 export default function ExamSessionDetailPage() {
   const params = useParams();
   const sessionId = params.id as string;
+  const confirm = useConfirm();
 
   const [session, setSession] = React.useState<ExamSession | null>(null);
   const [assignments, setAssignments] = React.useState<Assignment[]>([]);
   const [participants, setParticipants] = React.useState<Participant[]>([]);
-  const [results, setResults] = React.useState<SessionSubmissionResult[]>(([]));
+  const [results, setResults] = React.useState<SessionSubmissionResult[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [activeTab, setActiveTab] = React.useState<Tab>("assignments");
 
+  const [selectedSubmissionId, setSelectedSubmissionId] = React.useState<string | null>(null);
   const [participantsError, setParticipantsError] = React.useState<string | null>(null);
   const [resultsError, setResultsError] = React.useState<string | null>(null);
 
@@ -44,7 +48,7 @@ export default function ExamSessionDetailPage() {
   const [exportJob, setExportJob] = React.useState<ExportJob | null>(null);
   const [exporting, setExporting] = React.useState(false);
   const [exportError, setExportError] = React.useState<string | null>(null);
-  const [gradingRound, setGradingRound] = React.useState("Lan 1");
+  const [gradingRound, setGradingRound] = React.useState("Round 1");
 
   const loadSession = React.useCallback(async () => {
     try {
@@ -120,12 +124,18 @@ export default function ExamSessionDetailPage() {
   }, [newAssignment, sessionId]);
 
   const handleDeleteAssignment = React.useCallback(async (assignmentId: string) => {
-    if (!confirm("Delete this assignment?")) return;
+    const confirmed = await confirm({
+      title: "Confirm Assignment Deletion",
+      description: "Are you sure you want to delete this assignment? All associated questions, test cases, and submissions will also be permanently deleted.",
+      confirmText: "Delete Assignment",
+      variant: "danger",
+    });
+    if (!confirmed) return;
     const res = await api.deleteAssignment(assignmentId);
     if (res.status) {
       setAssignments((prev) => prev.filter((a) => a.id !== assignmentId));
     }
-  }, []);
+  }, [confirm]);
 
   const pollRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -230,18 +240,18 @@ export default function ExamSessionDetailPage() {
         style={{
           fontFamily: "Inter, Arial, sans-serif",
           fontSize: "0.875rem",
-          color: "#939084",
+          color: "#717171",
           marginBottom: "16px",
         }}
       >
         <Link
           href="/exam-sessions"
-          style={{ color: "#939084", textDecoration: "none" }}
+          style={{ color: "#717171", textDecoration: "none" }}
         >
           Exam Sessions
         </Link>
         <span style={{ margin: "0 8px" }}>/</span>
-        <span style={{ color: "#201515" }}>{session.title}</span>
+        <span style={{ color: "#222222" }}>{session.title}</span>
       </div>
 
       {/* Page Header */}
@@ -253,7 +263,7 @@ export default function ExamSessionDetailPage() {
             fontWeight: 600,
             textTransform: "uppercase",
             letterSpacing: "0.5px",
-            color: "#939084",
+            color: "#717171",
             marginBottom: "8px",
           }}
         >
@@ -265,7 +275,7 @@ export default function ExamSessionDetailPage() {
             fontSize: "2.5rem",
             fontWeight: 500,
             lineHeight: 1.1,
-            color: "#201515",
+            color: "#222222",
             margin: "0 0 8px 0",
           }}
         >
@@ -276,7 +286,7 @@ export default function ExamSessionDetailPage() {
             style={{
               fontFamily: "Inter, Arial, sans-serif",
               fontSize: "1rem",
-              color: "#36342e",
+              color: "#3f3f46",
             }}
           >
             {session.description}
@@ -289,7 +299,7 @@ export default function ExamSessionDetailPage() {
         style={{
           display: "flex",
           gap: "0",
-          borderBottom: "1px solid #c5c0b1",
+          borderBottom: "1px solid #ebebeb",
           marginBottom: "32px",
           overflowX: "auto",
         }}
@@ -305,10 +315,10 @@ export default function ExamSessionDetailPage() {
               fontFamily: "Inter, Arial, sans-serif",
               fontSize: "1rem",
               fontWeight: 500,
-              color: activeTab === tab.key ? "#201515" : "#939084",
+              color: activeTab === tab.key ? "#222222" : "#717171",
               backgroundColor: "transparent",
               border: "none",
-              borderBottom: activeTab === tab.key ? "2px solid #ff4f00" : "2px solid transparent",
+              borderBottom: activeTab === tab.key ? "2px solid #f97316" : "2px solid transparent",
               cursor: "pointer",
               transition: "color 0.15s ease, border-color 0.15s ease",
               whiteSpace: "nowrap",
@@ -337,7 +347,7 @@ export default function ExamSessionDetailPage() {
                 fontFamily: "Inter, Arial, sans-serif",
                 fontSize: "1.25rem",
                 fontWeight: 600,
-                color: "#201515",
+                color: "#222222",
                 margin: 0,
               }}
             >
@@ -352,9 +362,9 @@ export default function ExamSessionDetailPage() {
                 fontFamily: "Inter, Arial, sans-serif",
                 fontSize: "0.875rem",
                 fontWeight: 600,
-                color: "#fffefb",
-                backgroundColor: "#ff4f00",
-                border: "1px solid #ff4f00",
+                color: "#ffffff",
+                backgroundColor: "#f97316",
+                border: "1px solid #f97316",
                 borderRadius: "4px",
                 cursor: "pointer",
               }}
@@ -367,8 +377,8 @@ export default function ExamSessionDetailPage() {
             <form
               onSubmit={handleCreateAssignment}
               style={{
-                backgroundColor: "#fffefb",
-                border: "1px solid #c5c0b1",
+                backgroundColor: "#ffffff",
+                border: "1px solid #ebebeb",
                 borderRadius: "5px",
                 padding: "24px",
                 marginBottom: "24px",
@@ -379,7 +389,7 @@ export default function ExamSessionDetailPage() {
                   fontFamily: "Inter, Arial, sans-serif",
                   fontSize: "1.125rem",
                   fontWeight: 600,
-                  color: "#201515",
+                  color: "#222222",
                   marginBottom: "16px",
                 }}
               >
@@ -400,7 +410,7 @@ export default function ExamSessionDetailPage() {
                       fontFamily: "Inter, Arial, sans-serif",
                       fontSize: "0.8125rem",
                       fontWeight: 600,
-                      color: "#36342e",
+                      color: "#3f3f46",
                       marginBottom: "6px",
                     }}
                   >
@@ -416,9 +426,9 @@ export default function ExamSessionDetailPage() {
                     placeholder="e.g. 101"
                     style={{
                       width: "100%",
-                      backgroundColor: "#fffefb",
-                      color: "#201515",
-                      border: "1px solid #c5c0b1",
+                      backgroundColor: "#ffffff",
+                      color: "#222222",
+                      border: "1px solid #ebebeb",
                       borderRadius: "5px",
                       padding: "8px 12px",
                       fontFamily: "Inter, Arial, sans-serif",
@@ -426,10 +436,10 @@ export default function ExamSessionDetailPage() {
                       outline: "none",
                     }}
                     onFocus={(e) => {
-                      e.target.style.borderColor = "#ff4f00";
+                      e.target.style.borderColor = "#f97316";
                     }}
                     onBlur={(e) => {
-                      e.target.style.borderColor = "#c5c0b1";
+                      e.target.style.borderColor = "#ebebeb";
                     }}
                   />
                 </div>
@@ -440,7 +450,7 @@ export default function ExamSessionDetailPage() {
                       fontFamily: "Inter, Arial, sans-serif",
                       fontSize: "0.8125rem",
                       fontWeight: 600,
-                      color: "#36342e",
+                      color: "#3f3f46",
                       marginBottom: "6px",
                     }}
                   >
@@ -459,9 +469,9 @@ export default function ExamSessionDetailPage() {
                     placeholder="e.g. Ma de 101"
                     style={{
                       width: "100%",
-                      backgroundColor: "#fffefb",
-                      color: "#201515",
-                      border: "1px solid #c5c0b1",
+                      backgroundColor: "#ffffff",
+                      color: "#222222",
+                      border: "1px solid #ebebeb",
                       borderRadius: "5px",
                       padding: "8px 12px",
                       fontFamily: "Inter, Arial, sans-serif",
@@ -469,10 +479,10 @@ export default function ExamSessionDetailPage() {
                       outline: "none",
                     }}
                     onFocus={(e) => {
-                      e.target.style.borderColor = "#ff4f00";
+                      e.target.style.borderColor = "#f97316";
                     }}
                     onBlur={(e) => {
-                      e.target.style.borderColor = "#c5c0b1";
+                      e.target.style.borderColor = "#ebebeb";
                     }}
                   />
                 </div>
@@ -484,7 +494,7 @@ export default function ExamSessionDetailPage() {
                     fontFamily: "Inter, Arial, sans-serif",
                     fontSize: "0.8125rem",
                     fontWeight: 600,
-                    color: "#36342e",
+                    color: "#3f3f46",
                     marginBottom: "6px",
                   }}
                 >
@@ -502,9 +512,9 @@ export default function ExamSessionDetailPage() {
                   placeholder="Optional description"
                   style={{
                     width: "100%",
-                    backgroundColor: "#fffefb",
-                    color: "#201515",
-                    border: "1px solid #c5c0b1",
+                    backgroundColor: "#ffffff",
+                    color: "#222222",
+                    border: "1px solid #ebebeb",
                     borderRadius: "5px",
                     padding: "8px 12px",
                     fontFamily: "Inter, Arial, sans-serif",
@@ -512,10 +522,10 @@ export default function ExamSessionDetailPage() {
                     outline: "none",
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "#ff4f00";
+                    e.target.style.borderColor = "#f97316";
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = "#c5c0b1";
+                    e.target.style.borderColor = "#ebebeb";
                   }}
                 />
               </div>
@@ -528,9 +538,9 @@ export default function ExamSessionDetailPage() {
                     fontFamily: "Inter, Arial, sans-serif",
                     fontSize: "0.875rem",
                     fontWeight: 600,
-                    color: "#fffefb",
-                    backgroundColor: "#ff4f00",
-                    border: "1px solid #ff4f00",
+                    color: "#ffffff",
+                    backgroundColor: "#f97316",
+                    border: "1px solid #f97316",
                     borderRadius: "4px",
                     cursor: creatingAssignment ? "not-allowed" : "pointer",
                     opacity: creatingAssignment ? 0.6 : 1,
@@ -546,9 +556,9 @@ export default function ExamSessionDetailPage() {
                     fontFamily: "Inter, Arial, sans-serif",
                     fontSize: "0.875rem",
                     fontWeight: 600,
-                    color: "#36342e",
-                    backgroundColor: "#eceae3",
-                    border: "1px solid #c5c0b1",
+                    color: "#3f3f46",
+                    backgroundColor: "#f4f4f5",
+                    border: "1px solid #ebebeb",
                     borderRadius: "8px",
                     cursor: "pointer",
                   }}
@@ -571,9 +581,9 @@ export default function ExamSessionDetailPage() {
                     fontFamily: "Inter, Arial, sans-serif",
                     fontSize: "0.875rem",
                     fontWeight: 600,
-                    color: "#fffefb",
-                    backgroundColor: "#ff4f00",
-                    border: "1px solid #ff4f00",
+                    color: "#ffffff",
+                    backgroundColor: "#f97316",
+                    border: "1px solid #f97316",
                     borderRadius: "4px",
                     cursor: "pointer",
                   }}
@@ -594,8 +604,8 @@ export default function ExamSessionDetailPage() {
                 <div
                   key={a.id}
                   style={{
-                    backgroundColor: "#fffefb",
-                    border: "1px solid #c5c0b1",
+                    backgroundColor: "#ffffff",
+                    border: "1px solid #ebebeb",
                     borderRadius: "5px",
                     padding: "20px",
                   }}
@@ -613,12 +623,12 @@ export default function ExamSessionDetailPage() {
                         style={{
                           display: "inline-block",
                           padding: "2px 8px",
-                          backgroundColor: "#eceae3",
+                          backgroundColor: "#f4f4f5",
                           borderRadius: "4px",
                           fontFamily: "Inter, Arial, sans-serif",
                           fontSize: "0.75rem",
                           fontWeight: 600,
-                          color: "#36342e",
+                          color: "#3f3f46",
                           marginBottom: "6px",
                         }}
                       >
@@ -629,7 +639,7 @@ export default function ExamSessionDetailPage() {
                           fontFamily: "Inter, Arial, sans-serif",
                           fontSize: "1.125rem",
                           fontWeight: 600,
-                          color: "#201515",
+                          color: "#222222",
                           margin: 0,
                         }}
                       >
@@ -655,7 +665,7 @@ export default function ExamSessionDetailPage() {
                       style={{
                         fontFamily: "Inter, Arial, sans-serif",
                         fontSize: "0.875rem",
-                        color: "#939084",
+                        color: "#717171",
                         marginBottom: "12px",
                       }}
                     >
@@ -671,9 +681,9 @@ export default function ExamSessionDetailPage() {
                       fontFamily: "Inter, Arial, sans-serif",
                       fontSize: "0.8125rem",
                       fontWeight: 600,
-                      color: "#fffefb",
-                      backgroundColor: "#ff4f00",
-                      border: "1px solid #ff4f00",
+                      color: "#ffffff",
+                      backgroundColor: "#f97316",
+                      border: "1px solid #f97316",
                       borderRadius: "4px",
                       textDecoration: "none",
                     }}
@@ -695,7 +705,7 @@ export default function ExamSessionDetailPage() {
               fontFamily: "Inter, Arial, sans-serif",
               fontSize: "1.25rem",
               fontWeight: 600,
-              color: "#201515",
+              color: "#222222",
               marginBottom: "20px",
             }}
           >
@@ -745,7 +755,7 @@ export default function ExamSessionDetailPage() {
                 fontFamily: "Inter, Arial, sans-serif",
                 fontSize: "1.25rem",
                 fontWeight: 600,
-                color: "#201515",
+                color: "#222222",
                 margin: 0,
               }}
             >
@@ -759,9 +769,9 @@ export default function ExamSessionDetailPage() {
                 placeholder="Grading round"
                 style={{
                   padding: "8px 12px",
-                  backgroundColor: "#fffefb",
-                  color: "#201515",
-                  border: "1px solid #c5c0b1",
+                  backgroundColor: "#ffffff",
+                  color: "#222222",
+                  border: "1px solid #ebebeb",
                   borderRadius: "5px",
                   fontFamily: "Inter, Arial, sans-serif",
                   fontSize: "0.875rem",
@@ -775,9 +785,9 @@ export default function ExamSessionDetailPage() {
                   fontFamily: "Inter, Arial, sans-serif",
                   fontSize: "0.875rem",
                   fontWeight: 600,
-                  color: "#36342e",
-                  backgroundColor: "#eceae3",
-                  border: "1px solid #c5c0b1",
+                  color: "#3f3f46",
+                  backgroundColor: "#f4f4f5",
+                  border: "1px solid #ebebeb",
                   borderRadius: "8px",
                   cursor: "pointer",
                 }}
@@ -810,7 +820,7 @@ export default function ExamSessionDetailPage() {
                         <div
                           style={{
                             fontWeight: 600,
-                            color: "#201515",
+                            color: "#222222",
                           }}
                         >
                           {r.studentCode}
@@ -818,7 +828,7 @@ export default function ExamSessionDetailPage() {
                         <div
                           style={{
                             fontSize: "0.8125rem",
-                            color: "#939084",
+                            color: "#717171",
                           }}
                         >
                           {r.username}
@@ -833,7 +843,7 @@ export default function ExamSessionDetailPage() {
                       <span
                         style={{
                           padding: "2px 8px",
-                          backgroundColor: "#eceae3",
+                          backgroundColor: "#f4f4f5",
                           borderRadius: "4px",
                           fontSize: "0.8125rem",
                           fontWeight: 600,
@@ -859,7 +869,7 @@ export default function ExamSessionDetailPage() {
                         >
                           {r.totalScore}
                         </span>
-                        <span style={{ color: "#939084" }}>
+                        <span style={{ color: "#717171" }}>
                           {" "}
                           / {r.maxScore}
                         </span>
@@ -877,7 +887,7 @@ export default function ExamSessionDetailPage() {
                     render: (r) => (
                       <span
                         style={{
-                          color: "#939084",
+                          color: "#717171",
                           fontSize: "0.8125rem",
                           maxWidth: "200px",
                           display: "block",
@@ -894,18 +904,21 @@ export default function ExamSessionDetailPage() {
                     key: "actions",
                     header: "",
                     render: (r) => (
-                      <Link
-                        href={`/submissions/${r.submissionId}`}
+                      <button
+                        onClick={() => setSelectedSubmissionId(r.submissionId)}
                         style={{
+                          background: "none",
+                          border: "none",
                           fontFamily: "Inter, Arial, sans-serif",
                           fontSize: "0.8125rem",
                           fontWeight: 600,
-                          color: "#ff4f00",
-                          textDecoration: "none",
+                          color: "#f97316",
+                          cursor: "pointer",
+                          padding: 0,
                         }}
                       >
                         View
-                      </Link>
+                      </button>
                     ),
                   },
                 ]}
@@ -926,7 +939,7 @@ export default function ExamSessionDetailPage() {
               fontFamily: "Inter, Arial, sans-serif",
               fontSize: "1.25rem",
               fontWeight: 600,
-              color: "#201515",
+              color: "#222222",
               marginBottom: "8px",
             }}
           >
@@ -936,7 +949,7 @@ export default function ExamSessionDetailPage() {
             style={{
               fontFamily: "Inter, Arial, sans-serif",
               fontSize: "0.9375rem",
-              color: "#939084",
+              color: "#717171",
               marginBottom: "32px",
             }}
           >
@@ -946,8 +959,8 @@ export default function ExamSessionDetailPage() {
 
           <div
             style={{
-              backgroundColor: "#fffefb",
-              border: "1px solid #c5c0b1",
+              backgroundColor: "#ffffff",
+              border: "1px solid #ebebeb",
               borderRadius: "5px",
               padding: "32px",
               maxWidth: "500px",
@@ -960,7 +973,7 @@ export default function ExamSessionDetailPage() {
                   fontFamily: "Inter, Arial, sans-serif",
                   fontSize: "0.875rem",
                   fontWeight: 600,
-                  color: "#36342e",
+                  color: "#3f3f46",
                   marginBottom: "8px",
                 }}
               >
@@ -970,12 +983,12 @@ export default function ExamSessionDetailPage() {
                 type="text"
                 value={gradingRound}
                 onChange={(e) => setGradingRound(e.target.value)}
-                placeholder="e.g. Lan 1"
+                placeholder="e.g. Round 1"
                 style={{
                   width: "100%",
-                  backgroundColor: "#fffefb",
-                  color: "#201515",
-                  border: "1px solid #c5c0b1",
+                  backgroundColor: "#ffffff",
+                  color: "#222222",
+                  border: "1px solid #ebebeb",
                   borderRadius: "5px",
                   padding: "10px 14px",
                   fontFamily: "Inter, Arial, sans-serif",
@@ -983,10 +996,10 @@ export default function ExamSessionDetailPage() {
                   outline: "none",
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "#ff4f00";
+                  e.target.style.borderColor = "#f97316";
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = "#c5c0b1";
+                  e.target.style.borderColor = "#ebebeb";
                 }}
               />
             </div>
@@ -1023,7 +1036,7 @@ export default function ExamSessionDetailPage() {
                       ? "#bbf7d0"
                       : exportJob.status === "Failed"
                         ? "#fecaca"
-                        : "#ff4f00"
+                        : "#f97316"
                   }`,
                   borderRadius: "4px",
                   marginBottom: "16px",
@@ -1042,7 +1055,7 @@ export default function ExamSessionDetailPage() {
                         fontFamily: "Inter, Arial, sans-serif",
                         fontSize: "0.9375rem",
                         fontWeight: 600,
-                        color: "#201515",
+                        color: "#222222",
                         marginBottom: "4px",
                       }}
                     >
@@ -1068,9 +1081,9 @@ export default function ExamSessionDetailPage() {
                         fontFamily: "Inter, Arial, sans-serif",
                         fontSize: "0.875rem",
                         fontWeight: 600,
-                        color: "#fffefb",
-                        backgroundColor: "#ff4f00",
-                        border: "1px solid #ff4f00",
+                        color: "#ffffff",
+                        backgroundColor: "#f97316",
+                        border: "1px solid #f97316",
                         borderRadius: "4px",
                         cursor: "pointer",
                       }}
@@ -1093,9 +1106,9 @@ export default function ExamSessionDetailPage() {
                 fontFamily: "Inter, Arial, sans-serif",
                 fontSize: "1rem",
                 fontWeight: 600,
-                color: "#fffefb",
-                backgroundColor: "#ff4f00",
-                border: "1px solid #ff4f00",
+                color: "#ffffff",
+                backgroundColor: "#f97316",
+                border: "1px solid #f97316",
                 borderRadius: "4px",
                 cursor:
                   exporting || exportJob?.status === "Running"
@@ -1114,6 +1127,15 @@ export default function ExamSessionDetailPage() {
           </div>
         </div>
       )}
+
+      <DetailSubmissionDialog
+        open={selectedSubmissionId !== null}
+        submissionId={selectedSubmissionId}
+        onOpenChange={(open) => {
+          if (!open) setSelectedSubmissionId(null);
+        }}
+        onRefresh={loadResults}
+      />
     </div>
   );
 }

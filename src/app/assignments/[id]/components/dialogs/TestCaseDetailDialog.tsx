@@ -1,11 +1,8 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, X, Plus } from "lucide-react";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TestCase } from "@/types";
-import { TestCaseFormItem } from "../../types";
 
 export function TestCaseDetailDialog({
   isOpen,
@@ -21,7 +18,7 @@ export function TestCaseDetailDialog({
   if (!tc) return null;
   
   const formatJson = (val: any) => {
-    if (!val) return "Không có";
+    if (!val) return "None";
     if (typeof val === "object") return JSON.stringify(val, null, 2);
     try {
       return JSON.stringify(JSON.parse(val), null, 2);
@@ -55,7 +52,7 @@ export function TestCaseDetailDialog({
             className="relative bg-white rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden z-10"
           >
             <div className="flex justify-between items-center p-4 border-b border-[#ebebeb]">
-              <h3 className="text-base font-bold text-[#222222]">Chi tiết Test Case: {tc.name}</h3>
+              <h3 className="text-base font-bold text-[#222222]">Test Case Detail: {tc.name}</h3>
               <button onClick={onClose} className="text-[#717171] hover:text-[#222222] transition-colors"><X size={20} /></button>
             </div>
             
@@ -71,15 +68,15 @@ export function TestCaseDetailDialog({
                     </div>
                     <div>
                       <span className="text-[10px] font-bold text-[#717171] uppercase tracking-wider block mb-1">URL Template</span>
-                      <span className="text-sm font-medium text-[#222222] break-all">{tc.urlTemplate || "Không có"}</span>
+                      <span className="text-sm font-medium text-[#222222] break-all">{tc.urlTemplate || "None"}</span>
                     </div>
                     <div>
                       <span className="text-[10px] font-bold text-[#717171] uppercase tracking-wider block mb-1">Expected Status</span>
                       <span className="text-sm font-medium text-[#222222]">{tc.expectedStatus || 200}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold text-[#717171] uppercase tracking-wider block mb-1">Hệ số điểm</span>
-                      <span className="text-sm font-medium text-[#222222]">{tc.score}đ</span>
+                      <span className="text-[10px] font-bold text-[#717171] uppercase tracking-wider block mb-1">Score weight</span>
+                      <span className="text-sm font-medium text-[#222222]">{tc.score} pts</span>
                     </div>
                   </div>
                 )}
@@ -88,23 +85,23 @@ export function TestCaseDetailDialog({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <span className="text-[10px] font-bold text-[#717171] uppercase tracking-wider block mb-1">Selector</span>
-                      <span className="text-sm font-medium text-[#222222] break-all">{tc.selector || "Không có"}</span>
+                      <span className="text-sm font-medium text-[#222222] break-all">{tc.selector || "None"}</span>
                     </div>
                     <div>
                       <span className="text-[10px] font-bold text-[#717171] uppercase tracking-wider block mb-1">Value</span>
-                      <span className="text-sm font-medium text-[#222222]">{tc.value || "Không có"}</span>
+                      <span className="text-sm font-medium text-[#222222]">{tc.value || "None"}</span>
                     </div>
                     <div>
                       <span className="text-[10px] font-bold text-[#717171] uppercase tracking-wider block mb-1">Element ID</span>
-                      <span className="text-sm font-medium text-[#222222]">{tc.elementId || "Không có"}</span>
+                      <span className="text-sm font-medium text-[#222222]">{tc.elementId || "None"}</span>
                     </div>
                     <div>
                       <span className="text-[10px] font-bold text-[#717171] uppercase tracking-wider block mb-1">Element Text</span>
-                      <span className="text-sm font-medium text-[#222222]">{tc.elementText || "Không có"}</span>
+                      <span className="text-sm font-medium text-[#222222]">{tc.elementText || "None"}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold text-[#717171] uppercase tracking-wider block mb-1">Hệ số điểm</span>
-                      <span className="text-sm font-medium text-[#222222]">{tc.score}đ</span>
+                      <span className="text-[10px] font-bold text-[#717171] uppercase tracking-wider block mb-1">Score weight</span>
+                      <span className="text-sm font-medium text-[#222222]">{tc.score} pts</span>
                     </div>
                   </div>
                 )}
@@ -130,7 +127,7 @@ export function TestCaseDetailDialog({
             
             <div className="p-4 border-t border-[#ebebeb] flex justify-end bg-white">
               <button onClick={onClose} className="px-5 py-2.5 text-xs font-semibold bg-[#f5f5f5] text-[#222222] hover:bg-[#ebebeb] rounded-lg transition-colors">
-                Đóng
+                Close
               </button>
             </div>
           </motion.div>
