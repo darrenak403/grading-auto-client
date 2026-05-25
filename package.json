@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "docker:dev": "docker compose --env-file docker/.env.local -f docker/docker-compose.dev.yml pull && docker compose --env-file docker/.env.local -f docker/docker-compose.dev.yml up -d",
+    "docker:dev:down": "docker compose --env-file docker/.env.local -f docker/docker-compose.dev.yml down",
+    "docker:prod": "docker compose --env-file docker/.env -f docker/docker-compose.prod.yml pull && docker compose --env-file docker/.env -f docker/docker-compose.prod.yml up -d",
+    "docker:prod:down": "docker compose --env-file docker/.env -f docker/docker-compose.prod.yml down"
   },
   "dependencies": {
     "@radix-ui/react-select": "^2.2.6",
