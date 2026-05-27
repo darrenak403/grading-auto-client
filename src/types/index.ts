@@ -255,6 +255,8 @@ export interface CreateExportRequest {
   examSessionId?: string;
 }
 
+export * from "./lab";
+
 // ==================== API Response ====================
 export interface ApiResponse<T> {
   status: boolean;

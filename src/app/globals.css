@@ -485,22 +485,29 @@ body {
   width: 100%;
   background-color: var(--color-cream);
   color: var(--color-text);
-  border: 1px solid var(--color-sand);
+  border: 1px solid var(--color-mid-warm);
   border-radius: var(--radius-content);
-  padding: var(--space-3) var(--space-4);
-  font-family: var(--font-system);
-  font-size: var(--text-button);
+  padding: 10px 14px;
+  font-family: var(--font-primary);
+  font-size: var(--text-button-sm);
+  font-weight: 500;
   line-height: 1.5;
-  transition: border-color 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+}
+
+.input:hover {
+  border-color: #a1a1aa;
 }
 
 .input::placeholder {
-  color: var(--color-warm-gray);
+  color: #a1a1aa;
 }
 
 .input:focus {
   outline: none;
   border-color: var(--color-orange);
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15);
 }
 
 .input:disabled {
@@ -592,6 +599,20 @@ select:focus-visible {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Lab grading placeholder — decorative slow creep */
+@keyframes lab-grading-creep {
+  0% {
+    width: 5%;
+  }
+  100% {
+    width: 88%;
+  }
+}
+
+.lab-grading-placeholder-fill {
+  animation: lab-grading-creep 50s ease-in-out forwards;
 }
 
 /* ============================================

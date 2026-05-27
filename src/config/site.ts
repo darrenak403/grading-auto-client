@@ -1,3 +1,14 @@
+export interface NavItem {
+  label: string;
+  href: string;
+}
+
+export interface NavGroup {
+  label: string;
+  defaultOpen: boolean;
+  items: NavItem[];
+}
+
 export const siteConfig = {
   name: "PRN232 Auto Grader",
   description: "Automated grading system for PRN232 programming assignments",
@@ -6,6 +17,29 @@ export const siteConfig = {
   author: {
     name: "PRN232 Team",
   },
+  standaloneItems: [
+    { label: "Dashboard", href: "/dashboard" },
+  ] satisfies NavItem[],
+  navGroups: [
+    {
+      label: "PE Exam Grading",
+      defaultOpen: true,
+      items: [
+        { label: "Exam Sessions", href: "/exam-sessions" },
+        { label: "Submissions", href: "/submissions" },
+        { label: "Exports", href: "/exports" },
+      ],
+    },
+    {
+      label: "Lab Grading",
+      defaultOpen: true,
+      items: [
+        { label: "Semesters", href: "/lab/semesters" },
+        { label: "Lab Assignments", href: "/lab/assignments" },
+      ],
+    },
+  ] satisfies NavGroup[],
+  /** @deprecated Use navGroups — kept for backward compatibility */
   navItems: [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Exam Sessions", href: "/exam-sessions" },

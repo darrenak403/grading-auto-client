@@ -49,3 +49,4 @@ docker/.env.local
 next-env.d.ts
 
 .agent/
+plans/
