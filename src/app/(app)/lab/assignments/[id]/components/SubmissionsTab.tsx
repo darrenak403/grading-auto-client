@@ -4,9 +4,9 @@ import * as React from "react";
 import { api } from "@/lib";
 import type { LabAssignmentRosterItemDto, LabSubmissionDto } from "@/types";
 import { rosterBySubmissionId } from "@/lib/lab-utils";
-import { useConfirm, useToast, Button } from "@/components/ui";
+import { useConfirm, useToast, Button, TableSkeleton } from "@/components/ui";
 import { Table } from "@/components/ui/Table";
-import { useLabGradingProgress } from "../context";
+import { useLabGradingProgress, useLabWizard } from "../context";
 import { RosterScoreCell } from "./GradingPlaceholderProgress";
 
 interface SubmissionsTabProps {
@@ -16,6 +16,7 @@ interface SubmissionsTabProps {
 export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
   const confirm = useConfirm();
   const { toast } = useToast();
+  const { reloadAssignment } = useLabWizard();
   const {
     progress,
     isPolling,
@@ -101,6 +102,7 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
       toast(`Uploaded ${res.data.created.length} submission(s)`);
       if (res.data.warnings.length) setWarnings(res.data.warnings);
       await refreshTableData();
+      void reloadAssignment();
     } else {
       toast(res.message || "Upload failed", "error");
     }
@@ -138,6 +140,7 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
     if (res.status) {
       toast(`Deleted ${res.data?.deleted ?? 0} submission(s)`);
       await refreshTableData();
+      void reloadAssignment();
     }
   };
 
@@ -153,6 +156,7 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
     if (res.status) {
       setSubmissions((prev) => prev.filter((s) => s.id !== id));
       setRoster((prev) => prev.filter((r) => r.submissionId !== id));
+      void reloadAssignment();
     } else {
       toast(res.message || "Delete failed", "error");
     }
@@ -200,7 +204,7 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
     };
     return (
       <span
-        className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${map[status] ?? "bg-[#f4f4f5] text-[#717171]"}`}
+          className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${map[status] ?? "bg-[#f4f4f5] text-[#717171]"}`}
       >
         {status}
       </span>
@@ -215,8 +219,8 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
         : null;
 
   return (
-    <div>
-      <div className="mb-5 flex flex-wrap items-end gap-3">
+    <div className="flex flex-col h-full overflow-hidden flex-1">
+      <div className="mb-5 flex flex-wrap items-end gap-3 shrink-0">
         <div>
           <label className="mb-1.5 block text-sm font-semibold text-[#222222]">
             Upload ZIP/RAR
@@ -261,91 +265,116 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
       </div>
 
       {warnings.length > 0 && (
-        <ul className="mb-4 rounded-xl border border-[#fde68a] bg-[#fffbeb] px-4 py-3 text-xs text-[#92400e]">
+        <ul className="mb-4 rounded-xl border border-[#fde68a] bg-[#fffbeb] px-4 py-3 text-xs text-[#92400e] shrink-0">
           {warnings.map((w) => (
             <li key={w}>{w}</li>
           ))}
         </ul>
       )}
 
-      {loading ? (
-        <p className="text-sm text-[#717171]">Loading…</p>
-      ) : submissions.length === 0 ? (
-        <p className="text-sm text-[#717171]">No submissions yet.</p>
-      ) : (
-        <Table
-          columns={[
-            { key: "code", header: "Student", render: (s) => s.studentCode },
-            {
-              key: "file",
-              header: "File",
-              render: (s) => s.originalFileName,
-            },
-            {
-              key: "score",
-              header: "Score",
-              render: (s) => {
-                const row = rosterMap.get(s.id);
-                if (!row) {
-                  return <span className="text-sm text-[#717171]">—</span>;
-                }
-                return <RosterScoreCell item={row} />;
+      <div className="flex-1 overflow-hidden min-h-0">
+        {loading ? (
+          <TableSkeleton rows={5} columns={7} />
+        ) : submissions.length === 0 ? (
+          <p className="text-sm text-[#717171]">No submissions yet.</p>
+        ) : (
+          <Table
+            columns={[
+              { key: "code", header: "Student", render: (s) => s.studentCode },
+              {
+                key: "file",
+                header: "File",
+                render: (s) => s.originalFileName,
               },
-            },
-            {
-              key: "status",
-              header: "Status",
-              render: (s) => statusStyle(s.status),
-            },
-            {
-              key: "at",
-              header: "Uploaded",
-              render: (s) =>
-                new Date(s.createdAt).toLocaleString("en-US", {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                }),
-            },
-            {
-              key: "actions",
-              header: (
-                <button
-                  type="button"
-                  onClick={handleDeleteAll}
-                  className="cursor-pointer border-none bg-transparent text-sm font-semibold text-[#dc2626] hover:underline"
-                >
-                  Delete All
-                </button>
-              ),
-              render: (s) => (
-                <div className="flex gap-2">
-                  {(s.status === "BuildFailed" || s.status === "Error") && (
+              {
+                key: "score",
+                header: "Score",
+                render: (s) => {
+                  const row = rosterMap.get(s.id);
+                  if (!row) {
+                    return <span className="text-sm text-[#717171]">—</span>;
+                  }
+                  return <RosterScoreCell item={row} />;
+                },
+              },
+              {
+                key: "status",
+                header: "Status",
+                render: (s) => statusStyle(s.status),
+              },
+              {
+                key: "at",
+                header: "Uploaded",
+                render: (s) =>
+                  new Date(s.createdAt).toLocaleString("en-US", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  }),
+              },
+              {
+                key: "grade",
+                header: "Grade",
+                render: (s) => {
+                  const isGrading = s.status === "Grading";
+                  const isPending = s.status === "Pending";
+
+                  if (isPending) {
+                    return (
+                      <Button
+                        type="button"
+                        variant="primary"
+                        size="sm"
+                        onClick={() => handleRegrade(s.id)}
+                        disabled={isGrading}
+                      >
+                        Grade
+                      </Button>
+                    );
+                  }
+
+                  return (
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
                       onClick={() => handleRegrade(s.id)}
+                      disabled={isGrading}
                     >
-                      Regrade
+                      {isGrading ? "Grading…" : "Regrade"}
                     </Button>
-                  )}
+                  );
+                },
+              },
+              {
+                key: "actions",
+                header: (
+                  <button
+                    type="button"
+                    onClick={handleDeleteAll}
+                    className="cursor-pointer border-none bg-transparent text-sm font-semibold text-[#dc2626] hover:underline"
+                  >
+                    Delete All
+                  </button>
+                ),
+                render: (s) => (
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="!border-[#fecaca] !text-[#dc2626]"
+                    className="!border-[#fecaca] !text-[#dc2626] hover:!bg-[#fef2f2]"
                     onClick={() => handleDeleteOne(s.id)}
                   >
                     Delete
                   </Button>
-                </div>
-              ),
-            },
-          ]}
-          data={submissions}
-          keyExtractor={(s) => s.id}
-        />
-      )}
+                ),
+              },
+            ]}
+            data={submissions}
+            keyExtractor={(s) => s.id}
+            maxHeight="100%"
+          />
+        )}
+      </div>
     </div>
   );
 }

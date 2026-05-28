@@ -15,6 +15,7 @@ import {
   Modal,
   ModalActions,
   Textarea,
+  TableSkeleton,
 } from "@/components/ui";
 import { Table } from "@/components/ui/Table";
 import { useLabWizard } from "../context";
@@ -32,7 +33,7 @@ interface TestCasesTabProps {
 export function TestCasesTab({ assignmentId }: TestCasesTabProps) {
   const confirm = useConfirm();
   const { toast } = useToast();
-  const { registerStepSave } = useLabWizard();
+  const { registerStepSave, reloadAssignment } = useLabWizard();
   const [cases, setCases] = React.useState<LabTestCaseDto[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [importOpen, setImportOpen] = React.useState(false);
@@ -117,6 +118,7 @@ export function TestCasesTab({ assignmentId }: TestCasesTabProps) {
     if (res.status) {
       toast(`Deleted ${res.data?.deleted ?? 0} test case(s)`);
       await load();
+      void reloadAssignment();
     } else {
       toast(res.message || "Delete failed", "error");
     }
@@ -133,6 +135,7 @@ export function TestCasesTab({ assignmentId }: TestCasesTabProps) {
     const res = await api.deleteLabTestCase(tcId);
     if (res.status) {
       setCases((prev) => prev.filter((c) => c.id !== tcId));
+      void reloadAssignment();
     } else {
       toast(res.message || "Delete failed", "error");
     }
@@ -166,6 +169,7 @@ export function TestCasesTab({ assignmentId }: TestCasesTabProps) {
       setImportOpen(false);
       setImportJson("");
       await load();
+      void reloadAssignment();
     } else {
       setImportError(
         res.errors?.length
@@ -176,13 +180,13 @@ export function TestCasesTab({ assignmentId }: TestCasesTabProps) {
   };
 
   return (
-    <div>
+    <div className="flex flex-col h-full overflow-hidden flex-1">
       {error && (
-        <div className="mb-6 rounded-xl bg-[#fef2f2] border border-[#fca5a5] px-4 py-3 text-sm text-[#dc2626] font-semibold flex items-center gap-2">
+        <div className="mb-6 rounded-xl bg-[#fef2f2] border border-[#fca5a5] px-4 py-3 text-sm text-[#dc2626] font-semibold flex items-center gap-2 shrink-0">
           <span>⚠️ {error}</span>
         </div>
       )}
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div className="mb-4 flex flex-wrap items-center gap-2 shrink-0">
         <span className="text-sm text-[#717171]">
           Total {counts.total} · Approved {counts.approved} · Draft {counts.draft}{" "}
           · Rejected {counts.rejected}
@@ -210,86 +214,88 @@ export function TestCasesTab({ assignmentId }: TestCasesTabProps) {
         </Button>
       </div>
 
-      {loading ? (
-        <p className="text-sm text-[#717171]">Loading…</p>
-      ) : cases.length === 0 ? (
-        <p className="text-sm text-[#717171]">
-          No test cases yet. Import a JSON array from your rubric.
-        </p>
-      ) : (
-        <Table
-          columns={[
-            { key: "order", header: "#", width: "40px", render: (c) => c.order },
-            {
-              key: "method",
-              header: "Method",
-              width: "90px",
-              render: (c) => (
-                <code
-                  className={`rounded px-1.5 py-0.5 text-xs ${
-                    c.httpMethod === "SOURCE"
-                      ? "bg-[#ede9fe] text-[#6d28d9]"
-                      : "bg-[#f4f4f5] text-[#222222]"
-                  }`}
-                >
-                  {c.httpMethod}
-                </code>
-              ),
-            },
-            {
-              key: "url",
-              header: "URL / Rule",
-              width: "35%",
-              render: (c) => (
-                <span className="font-mono text-xs break-all whitespace-normal block">{c.urlTemplate}</span>
-              ),
-            },
-            {
-              key: "desc",
-              header: "Description",
-              width: "30%",
-              render: (c) => (
-                <span className="text-xs break-words whitespace-normal block">{c.description || "—"}</span>
-              ),
-            },
-            { key: "mode", header: "Match", width: "100px", render: (c) => c.matchMode },
-            { key: "score", header: "Score", width: "70px", render: (c) => c.score },
-            {
-              key: "status",
-              header: "Status",
-              width: "140px",
-              render: (c) => (
-                <FormSelect
-                  value={c.status}
-                  onValueChange={(v) =>
-                    handleStatusChange(c.id, v as LabTestCaseStatus)
-                  }
-                  options={STATUS_OPTIONS}
-                  className="w-full"
-                  triggerClassName="h-9 text-xs"
-                />
-              ),
-            },
-            {
-              key: "actions",
-              header: "",
-              width: "80px",
-              render: (c) => (
-                <button
-                  type="button"
-                  onClick={() => handleDeleteOne(c.id)}
-                  className="cursor-pointer border-none bg-transparent text-sm font-medium text-[#dc2626] hover:underline"
-                >
-                  Delete
-                </button>
-              ),
-            },
-          ]}
-          data={cases}
-          keyExtractor={(c) => c.id}
-          maxHeight={600}
-        />
-      )}
+      <div className="flex-1 overflow-hidden min-h-0">
+        {loading ? (
+          <TableSkeleton rows={5} columns={8} />
+        ) : cases.length === 0 ? (
+          <p className="text-sm text-[#717171]">
+            No test cases yet. Import a JSON array from your rubric.
+          </p>
+        ) : (
+          <Table
+            columns={[
+              { key: "order", header: "#", width: "40px", render: (c) => c.order },
+              {
+                key: "method",
+                header: "Method",
+                width: "90px",
+                render: (c) => (
+                  <code
+                    className={`rounded px-1.5 py-0.5 text-xs ${
+                      c.httpMethod === "SOURCE"
+                        ? "bg-[#ede9fe] text-[#6d28d9]"
+                        : "bg-[#f4f4f5] text-[#222222]"
+                    }`}
+                  >
+                    {c.httpMethod}
+                  </code>
+                ),
+              },
+              {
+                key: "url",
+                header: "URL / Rule",
+                width: "35%",
+                render: (c) => (
+                  <span className="font-mono text-xs break-all whitespace-normal block">{c.urlTemplate}</span>
+                ),
+              },
+              {
+                key: "desc",
+                header: "Description",
+                width: "30%",
+                render: (c) => (
+                  <span className="text-xs break-words whitespace-normal block">{c.description || "—"}</span>
+                ),
+              },
+              { key: "mode", header: "Match", width: "100px", render: (c) => c.matchMode },
+              { key: "score", header: "Score", width: "70px", render: (c) => c.score },
+              {
+                key: "status",
+                header: "Status",
+                width: "140px",
+                render: (c) => (
+                  <FormSelect
+                    value={c.status}
+                    onValueChange={(v) =>
+                      handleStatusChange(c.id, v as LabTestCaseStatus)
+                    }
+                    options={STATUS_OPTIONS}
+                    className="w-full"
+                    triggerClassName="h-9 text-xs"
+                  />
+                ),
+              },
+              {
+                key: "actions",
+                header: "",
+                width: "80px",
+                render: (c) => (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteOne(c.id)}
+                    className="cursor-pointer border-none bg-transparent text-sm font-medium text-[#dc2626] hover:underline"
+                  >
+                    Delete
+                  </button>
+                ),
+              },
+            ]}
+            data={cases}
+            keyExtractor={(c) => c.id}
+            maxHeight="100%"
+          />
+        )}
+      </div>
 
       <Modal
         open={importOpen}

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
 import { AlertCircle } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import {
@@ -14,25 +13,8 @@ import { LabWizardHeader } from "./components/layout/LabWizardHeader";
 import { LabWizardFooter } from "./components/layout/LabWizardFooter";
 import { LabWizardSteps } from "./components/steps/LabWizardSteps";
 
-const slideVariants = {
-  initial: (dir: number) => ({
-    x: dir > 0 ? 50 : -50,
-    opacity: 0,
-  }),
-  animate: {
-    x: 0,
-    opacity: 1,
-    transition: { duration: 0.25, ease: "easeOut" as const },
-  },
-  exit: (dir: number) => ({
-    x: dir < 0 ? 50 : -50,
-    opacity: 0,
-    transition: { duration: 0.2, ease: "easeIn" as const },
-  }),
-};
-
 function Content() {
-  const { loading, assignment, error, currentStep, direction, assignmentId } =
+  const { loading, assignment, error, assignmentId } =
     useLabWizard();
 
   if (loading && !assignment) {
@@ -69,19 +51,9 @@ function Content() {
           <LabWizardHeader />
           <main className="flex-1 overflow-y-auto px-2 py-2 md:px-6 md:py-4 relative flex flex-col items-center">
             <div className="max-w-[1600px] w-full flex flex-col">
-              <AnimatePresence mode="wait" custom={direction}>
-                <motion.div
-                  key={currentStep}
-                  custom={direction}
-                  variants={slideVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  className="w-full flex flex-col"
-                >
-                  <LabWizardSteps />
-                </motion.div>
-              </AnimatePresence>
+              <div className="w-full flex flex-col">
+                <LabWizardSteps />
+              </div>
             </div>
           </main>
           <LabWizardFooter />

@@ -63,14 +63,6 @@ export function Step1Setup() {
 
   return (
     <div className="w-full rounded-2xl border border-[#ebebeb] bg-white p-8">
-      <div className="mb-8">
-        <h2 className="m-0 text-2xl font-semibold text-[#222222]">Lab Setup</h2>
-        <p className="mt-2 text-sm text-[#717171]">
-          Configure the lab title, description, and semester before adding test
-          cases.
-        </p>
-      </div>
-
       {error && (
         <p className="mb-6 rounded-lg bg-[#fef2f2] px-3 py-2 text-sm text-[#dc2626]">
           {error}

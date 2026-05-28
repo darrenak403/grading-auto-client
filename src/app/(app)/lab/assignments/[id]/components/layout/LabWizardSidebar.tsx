@@ -1,6 +1,7 @@
 import { Check, GraduationCap } from "lucide-react";
 import { useLabWizard } from "../../context";
 import { LabWorkflowStatusBadge } from "./LabWorkflowStatusBadge";
+import { Badge } from "@/components/ui";
 
 export function LabWizardSidebar() {
   const { currentStep, setCurrentStep, setDirection, assignment } = useLabWizard();
@@ -79,7 +80,7 @@ export function LabWizardSidebar() {
                 {/* Nhãn chữ mô tả bước */}
                 <div className="flex flex-col gap-0.5 pt-0.5">
                   <span
-                    className={`text-xs font-semibold transition-colors duration-200 ${
+                    className={`text-xs font-semibold transition-colors duration-200 flex items-center gap-1.5 ${
                       isActive
                         ? "text-[#f97316]"
                         : isCompleted
@@ -87,7 +88,17 @@ export function LabWizardSidebar() {
                         : "text-[#717171] group-hover:text-[#222222]"
                     }`}
                   >
-                    {step.label}
+                    <span>{step.label}</span>
+                    {stepNum === 2 && assignment && assignment.testCaseCount > 0 && (
+                      <Badge variant="default" className="!rounded-full px-1.5 py-0.5 text-[9px] font-bold shrink-0">
+                        {assignment.testCaseCount}
+                      </Badge>
+                    )}
+                    {stepNum === 3 && assignment && assignment.submissionCount > 0 && (
+                      <Badge variant="default" className="!rounded-full px-1.5 py-0.5 text-[9px] font-bold shrink-0">
+                        {assignment.submissionCount}
+                      </Badge>
+                    )}
                   </span>
                   <span
                     className={`text-[10px] leading-snug transition-colors duration-200 ${

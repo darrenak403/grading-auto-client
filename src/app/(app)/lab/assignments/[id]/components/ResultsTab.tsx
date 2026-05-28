@@ -12,7 +12,7 @@ import {
   isRosterScorePending,
   sumEffectiveScores,
 } from "@/lib/lab-utils";
-import { useToast, Button, Input, Textarea, Modal, ModalActions } from "@/components/ui";
+import { useToast, Button, Input, Textarea, Modal, ModalActions, Skeleton, TableSkeleton, Badge } from "@/components/ui";
 import { useLabGradingProgress } from "../context";
 import { RosterScoreCell } from "./GradingPlaceholderProgress";
 
@@ -147,58 +147,73 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
   const runningId = progress?.runningSubmissionId;
 
   return (
-    <div className="flex flex-wrap gap-6">
-      <div className="min-w-[240px] shrink-0">
-        <h3 className="mb-3 text-base font-semibold text-[#222222]">Submissions</h3>
-        {loadingList ? (
-          <p className="text-sm text-[#717171]">Loading…</p>
-        ) : roster.length === 0 ? (
-          <p className="text-sm text-[#717171]">No submissions yet.</p>
-        ) : (
-          <ul className="m-0 list-none p-0">
-            {roster.map((row) => {
-              const isSelected = selectedId === row.submissionId;
-              const isRunning = runningId === row.submissionId;
-              return (
-                <li key={row.submissionId}>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedId(row.submissionId)}
-                    className={`mb-1 w-full rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
-                      isSelected
-                        ? "bg-[#fef2e8] font-semibold text-[#f97316]"
-                        : isRunning
-                          ? "bg-[#dbeafe] text-[#222222] hover:bg-[#bfdbfe]"
-                          : "text-[#222222] hover:bg-[#f4f4f5]"
-                    }`}
-                  >
-                    <span className="block">{row.studentCode}</span>
-                    <span className="mt-1 block">
-                      <RosterScoreCell item={row} />
-                    </span>
-                    <span className="mt-0.5 block text-xs font-normal text-[#717171]">
-                      {row.submissionStatus}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+    <div className="flex flex-col md:flex-row gap-6 h-full w-full overflow-hidden flex-1">
+      {/* Cột 1: Submissions Sidebar - Ghim cố định & tự cuộn độc lập */}
+      <div className="w-full md:w-[260px] shrink-0 flex flex-col h-full border-b md:border-b-0 md:border-r border-[#ebebeb] pb-4 md:pb-0 md:pr-4 overflow-hidden">
+        <div className="flex items-center gap-2 mb-3 shrink-0">
+          <h3 className="text-base font-semibold text-[#222222]">Submissions</h3>
+          {!loadingList && (
+            <Badge variant="default" className="!rounded-full px-2 py-0.5 text-[10px] font-bold">
+              {roster.length}
+            </Badge>
+          )}
+        </div>
+        <div className="flex-1 overflow-y-auto pr-1">
+          {loadingList ? (
+            <div className="flex flex-col gap-2">
+              <Skeleton height={40} className="w-full" />
+              <Skeleton height={40} className="w-full" />
+              <Skeleton height={40} className="w-full" />
+            </div>
+          ) : roster.length === 0 ? (
+            <p className="text-sm text-[#717171]">No submissions yet.</p>
+          ) : (
+            <ul className="m-0 list-none p-0">
+              {roster.map((row) => {
+                const isSelected = selectedId === row.submissionId;
+                const isRunning = runningId === row.submissionId;
+                return (
+                  <li key={row.submissionId}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedId(row.submissionId)}
+                      className={`mb-1 w-full rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
+                        isSelected
+                          ? "bg-[#fef2e8] font-semibold text-[#f97316]"
+                          : isRunning
+                            ? "bg-[#dbeafe] text-[#222222] hover:bg-[#bfdbfe]"
+                            : "text-[#222222] hover:bg-[#f4f4f5]"
+                      }`}
+                    >
+                      <span className="block">{row.studentCode}</span>
+                      <span className="mt-1 block">
+                        <RosterScoreCell item={row} />
+                      </span>
+                      <span className="mt-0.5 block text-xs font-normal text-[#717171]">
+                        {row.submissionStatus}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       </div>
 
-      <div className="min-w-[280px] flex-1">
+      {/* Cột 2: Detail Results - Cuộn dọc độc lập và lọt hoàn hảo bên trên Footer */}
+      <div className="min-w-[280px] flex-1 flex flex-col h-full overflow-y-auto pr-1">
         {!selectedId ? (
           <p className="text-sm text-[#717171]">
             Select a submission to view results.
           </p>
         ) : loadingDetail ? (
-          <p className="text-sm text-[#717171]">Loading results…</p>
+          <TableSkeleton rows={5} columns={7} />
         ) : !results ? (
           <p className="text-sm text-[#717171]">No results available.</p>
         ) : (
           <>
-            <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+            <div className="mb-4 flex flex-wrap items-start justify-between gap-3 shrink-0">
               <div>
                 <h3 className="m-0 text-lg font-semibold">{results.studentCode}</h3>
                 <p className="mt-1 text-sm text-[#717171]">
@@ -226,7 +241,7 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
               </Button>
             </div>
 
-            <div className="overflow-x-auto rounded-xl border border-[#ebebeb]">
+            <div className="overflow-x-auto overflow-y-hidden rounded-xl border border-[#ebebeb] shrink-0">
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-[#ebebeb] bg-[#fcfcfc]">
