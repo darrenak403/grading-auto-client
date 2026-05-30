@@ -25,6 +25,10 @@ export function LabWizardHeader() {
       title: "Review Results",
       desc: "Review scores per submission and adjust individual test case points.",
     },
+    5: {
+      title: "Export",
+      desc: "Export lab assignment results to Excel.",
+    },
   };
 
   const { title: stepTitle, desc: stepDesc } = stepMeta[currentStep] || {

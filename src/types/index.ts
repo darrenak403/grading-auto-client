@@ -179,14 +179,16 @@ export interface ReviewNote {
 
 export interface ExportJob {
   id: string;
-  assignmentId?: string;
-  assignmentCode?: string;
-  examSessionId?: string;
-  examSessionTitle?: string;
+  labAssignmentId?: string | null;
+  labAssignmentTitle?: string | null;
+  assignmentId?: string | null;
+  assignmentCode?: string | null;
+  examSessionId?: string | null;
+  examSessionTitle?: string | null;
   status: ExportStatus;
-  gradingRound?: string;
-  filePath?: string;
-  errorMessage?: string;
+  gradingRound?: string | null;
+  filePath?: string | null;
+  errorMessage?: string | null;
   createdAt?: string;
 }
 

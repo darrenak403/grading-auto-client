@@ -2,8 +2,7 @@
 
 import * as React from "react";
 import { api } from "@/lib";
-import type { LabAssignmentRosterItemDto, LabSubmissionDto } from "@/types";
-import { rosterBySubmissionId } from "@/lib/lab-utils";
+import type { LabAssignmentRosterItemDto } from "@/types";
 import { useConfirm, useToast, Button, TableSkeleton } from "@/components/ui";
 import { Table } from "@/components/ui/Table";
 import { useLabGradingProgress, useLabWizard } from "../context";
@@ -23,7 +22,6 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
     startPolling,
     registerOnProgressUpdate,
   } = useLabGradingProgress();
-  const [submissions, setSubmissions] = React.useState<LabSubmissionDto[]>([]);
   const [roster, setRoster] = React.useState<LabAssignmentRosterItemDto[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [uploading, setUploading] = React.useState(false);
@@ -31,21 +29,15 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
   const completionToastShownRef = React.useRef(false);
   const wasGradingActiveRef = React.useRef(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-  const rosterMap = React.useMemo(() => rosterBySubmissionId(roster), [roster]);
+  const bulkFileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleButtonClick = () => {
     fileInputRef.current?.click();
   };
 
-  const loadSubmissions = React.useCallback(async () => {
-    const res = await api.getLabSubmissions(assignmentId);
-    if (res.status && res.data) {
-      setSubmissions(res.data);
-      return res.data;
-    }
-    return [];
-  }, [assignmentId]);
+  const handleBulkButtonClick = () => {
+    bulkFileInputRef.current?.click();
+  };
 
   const loadRoster = React.useCallback(async () => {
     const res = await api.getLabAssignmentRoster(assignmentId);
@@ -57,8 +49,8 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
   }, [assignmentId]);
 
   const refreshTableData = React.useCallback(async () => {
-    await Promise.all([loadSubmissions(), loadRoster()]);
-  }, [loadSubmissions, loadRoster]);
+    await loadRoster();
+  }, [loadRoster]);
 
   React.useEffect(() => {
     setLoading(true);
@@ -112,11 +104,37 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
     }
   };
 
+  const handleBulkFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = e.target.files;
+    if (!selectedFiles || selectedFiles.length === 0) return;
+
+    setUploading(true);
+    setWarnings([]);
+    const res = await api.bulkUploadLabSubmissions(
+      assignmentId,
+      selectedFiles[0]
+    );
+    setUploading(false);
+    if (res.status && res.data) {
+      toast(`Bulk uploaded ${res.data.created.length} submission(s)`);
+      if (res.data.warnings.length) setWarnings(res.data.warnings);
+      await refreshTableData();
+      void reloadAssignment();
+    } else {
+      toast(res.message || "Bulk upload failed", "error");
+    }
+
+    if (bulkFileInputRef.current) {
+      bulkFileInputRef.current.value = "";
+    }
+  };
+
   const handleGradeAll = async () => {
     const res = await api.triggerLabGrading(assignmentId);
     if (res.status && res.data) {
       if (res.data.jobsCreated === 0) {
         toast(res.data.message || "No submissions need grading", "info");
+        await refreshTableData();
       } else {
         toast(res.data.message || `Created ${res.data.jobsCreated} grading job(s)`);
         completionToastShownRef.current = false;
@@ -154,7 +172,6 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
     if (!ok) return;
     const res = await api.deleteLabSubmission(id);
     if (res.status) {
-      setSubmissions((prev) => prev.filter((s) => s.id !== id));
       setRoster((prev) => prev.filter((r) => r.submissionId !== id));
       void reloadAssignment();
     } else {
@@ -166,9 +183,11 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
     const res = await api.regradeLabSubmission(id);
     if (res.status) {
       toast(res.data?.message || "Regrade job created");
-      completionToastShownRef.current = false;
-      startPolling();
       await refreshTableData();
+      if (res.data?.queued) {
+        completionToastShownRef.current = false;
+        startPolling();
+      }
     } else {
       toast(res.message || "Regrade failed", "error");
     }
@@ -186,9 +205,11 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
     const res = await api.regradeAllLabSubmissions(assignmentId);
     if (res.status && res.data) {
       toast(`Queued ${res.data.queued} submission(s) for regrading`);
-      completionToastShownRef.current = false;
-      startPolling();
       await refreshTableData();
+      if (res.data.queued > 0) {
+        completionToastShownRef.current = false;
+        startPolling();
+      }
     } else {
       toast(res.message || "Regrade all failed", "error");
     }
@@ -243,9 +264,26 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
             >
               {uploading ? "Uploading…" : "Choose Files"}
             </Button>
+            <input
+              ref={bulkFileInputRef}
+              type="file"
+              accept=".zip,.rar"
+              onChange={handleBulkFileChange}
+              className="hidden"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleBulkButtonClick}
+              className="h-9 px-3 py-1.5 text-xs font-semibold rounded-lg"
+              disabled={uploading}
+              title="Upload a single ZIP/RAR containing multiple submissions"
+            >
+              {uploading ? "Uploading…" : "Bulk ZIP/RAR Upload"}
+            </Button>
           </div>
           <p className="mt-1 text-xs text-[#a1a1aa]">
-            Filename: StudentCode_Name.zip
+            Filename: Lab(x)_StudentCode.zip or single Bulk ZIP/RAR
           </p>
         </div>
         <Button type="button" onClick={handleGradeAll}>
@@ -254,7 +292,7 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
         <Button
           type="button"
           variant="outline"
-          disabled={submissions.length === 0}
+          disabled={roster.length === 0}
           onClick={handleRegradeAll}
         >
           Regrade All
@@ -275,7 +313,7 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
       <div className="flex-1 overflow-hidden min-h-0">
         {loading ? (
           <TableSkeleton rows={5} columns={7} />
-        ) : submissions.length === 0 ? (
+        ) : roster.length === 0 ? (
           <p className="text-sm text-[#717171]">No submissions yet.</p>
         ) : (
           <Table
@@ -289,18 +327,12 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
               {
                 key: "score",
                 header: "Score",
-                render: (s) => {
-                  const row = rosterMap.get(s.id);
-                  if (!row) {
-                    return <span className="text-sm text-[#717171]">—</span>;
-                  }
-                  return <RosterScoreCell item={row} />;
-                },
+                render: (s) => <RosterScoreCell item={s} />,
               },
               {
                 key: "status",
                 header: "Status",
-                render: (s) => statusStyle(s.status),
+                render: (s) => statusStyle(s.submissionStatus),
               },
               {
                 key: "at",
@@ -315,8 +347,8 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
                 key: "grade",
                 header: "Grade",
                 render: (s) => {
-                  const isGrading = s.status === "Grading";
-                  const isPending = s.status === "Pending";
+                  const isGrading = s.submissionStatus === "Grading";
+                  const isPending = s.submissionStatus === "Pending";
 
                   if (isPending) {
                     return (
@@ -324,7 +356,7 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
                         type="button"
                         variant="primary"
                         size="sm"
-                        onClick={() => handleRegrade(s.id)}
+                        onClick={() => handleRegrade(s.submissionId)}
                         disabled={isGrading}
                       >
                         Grade
@@ -337,7 +369,7 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => handleRegrade(s.id)}
+                      onClick={() => handleRegrade(s.submissionId)}
                       disabled={isGrading}
                     >
                       {isGrading ? "Grading…" : "Regrade"}
@@ -362,15 +394,15 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
                     variant="outline"
                     size="sm"
                     className="!border-[#fecaca] !text-[#dc2626] hover:!bg-[#fef2f2]"
-                    onClick={() => handleDeleteOne(s.id)}
+                    onClick={() => handleDeleteOne(s.submissionId)}
                   >
                     Delete
                   </Button>
                 ),
               },
             ]}
-            data={submissions}
-            keyExtractor={(s) => s.id}
+            data={roster}
+            keyExtractor={(s) => s.submissionId}
             maxHeight="100%"
           />
         )}

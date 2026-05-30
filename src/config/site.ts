@@ -36,6 +36,7 @@ export const siteConfig = {
       items: [
         { label: "Semesters", href: "/lab/semesters" },
         { label: "Lab Assignments", href: "/lab/assignments" },
+        { label: "Exports", href: "/lab/exports" },
       ],
     },
   ] satisfies NavGroup[],
@@ -45,5 +46,6 @@ export const siteConfig = {
     { label: "Exam Sessions", href: "/exam-sessions" },
     { label: "Submissions", href: "/submissions" },
     { label: "Exports", href: "/exports" },
+    { label: "Lab Exports", href: "/lab/exports" },
   ],
 };

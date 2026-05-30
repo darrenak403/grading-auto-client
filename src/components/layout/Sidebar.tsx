@@ -31,6 +31,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   "/exports": Download,
   "/lab/semesters": Calendar,
   "/lab/assignments": FlaskConical,
+  "/lab/exports": Download,
 };
 
 const USER_NAV_HREFS = new Set(["/dashboard", "/submissions"]);

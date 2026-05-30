@@ -15,6 +15,8 @@ import {
 import { useToast, Button, Input, Textarea, Modal, ModalActions, Skeleton, TableSkeleton, Badge } from "@/components/ui";
 import { useLabGradingProgress } from "../context";
 import { RosterScoreCell } from "./GradingPlaceholderProgress";
+import { Search, X } from "lucide-react";
+
 
 interface ResultsTabProps {
   assignmentId: string;
@@ -46,6 +48,13 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
   const [adjustResultId, setAdjustResultId] = React.useState("");
   const [adjustScore, setAdjustScore] = React.useState("");
   const [adjustReason, setAdjustReason] = React.useState("");
+  const [searchTerm, setSearchTerm] = React.useState("");
+
+  const filteredRoster = React.useMemo(() => {
+    return roster.filter((row) =>
+      row.studentCode.toLowerCase().includes(searchTerm.trim().toLowerCase())
+    );
+  }, [roster, searchTerm]);
 
   const loadRoster = React.useCallback(async () => {
     const res = await api.getLabAssignmentRoster(assignmentId);
@@ -103,8 +112,10 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
     const res = await api.regradeLabSubmission(selectedId);
     if (res.status) {
       toast(res.data?.message || "Regrade job created");
-      startPolling();
       await loadRoster();
+      if (res.data?.queued) {
+        startPolling();
+      }
     } else {
       toast(res.message || "Regrade failed", "error");
     }
@@ -146,18 +157,113 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
 
   const runningId = progress?.runningSubmissionId;
 
+  const [exporting, setExporting] = React.useState(false);
+  const pollRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      const res = await api.createLabAssignmentExport(assignmentId);
+      if (res.status && res.data) {
+        if (pollRef.current) clearInterval(pollRef.current);
+        pollRef.current = setInterval(async () => {
+          const r = await api.getExportJob(res.data!.id);
+          if (r.status && r.data) {
+            if (r.data.status === "Done" || r.data.status === "Failed") {
+              if (pollRef.current) {
+                clearInterval(pollRef.current);
+                pollRef.current = null;
+              }
+              setExporting(false);
+              if (r.data.status === "Done") {
+                const downloadRes = await api.downloadExport(r.data.id);
+                if (downloadRes.ok) {
+                  const blob = await downloadRes.blob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = r.data.labAssignmentTitle
+                    ? `${r.data.labAssignmentTitle}.xlsx`
+                    : `lab-${assignmentId}-export.xlsx`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                } else {
+                  toast("Download failed", "error");
+                }
+              } else {
+                toast(r.data.errorMessage || "Export failed", "error");
+              }
+            }
+          }
+        }, 3000);
+      } else {
+        setExporting(false);
+        toast(res.message || "Failed to start export", "error");
+      }
+    } catch (error) {
+      setExporting(false);
+      toast(error instanceof Error ? error.message : "Error exporting", "error");
+    }
+  };
+
+  React.useEffect(() => {
+    return () => {
+      if (pollRef.current) {
+        clearInterval(pollRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div className="flex flex-col md:flex-row gap-6 h-full w-full overflow-hidden flex-1">
       {/* Cột 1: Submissions Sidebar - Ghim cố định & tự cuộn độc lập */}
       <div className="w-full md:w-[260px] shrink-0 flex flex-col h-full border-b md:border-b-0 md:border-r border-[#ebebeb] pb-4 md:pb-0 md:pr-4 overflow-hidden">
-        <div className="flex items-center gap-2 mb-3 shrink-0">
+        <div className="flex items-center gap-2 mb-3 shrink-0 flex-wrap">
           <h3 className="text-base font-semibold text-[#222222]">Submissions</h3>
           {!loadingList && (
             <Badge variant="default" className="!rounded-full px-2 py-0.5 text-[10px] font-bold">
-              {roster.length}
+              {searchTerm.trim() ? `${filteredRoster.length}/${roster.length}` : roster.length}
             </Badge>
           )}
+          <Button 
+            type="button" 
+            size="sm" 
+            variant="outline"
+            className="ml-auto" 
+            onClick={handleExport}
+            disabled={exporting || loadingList || roster.length === 0}
+          >
+            {exporting ? "Exporting..." : "Export Excel"}
+          </Button>
         </div>
+
+        {/* Thanh tìm kiếm đẹp mắt */}
+        {!loadingList && roster.length > 0 && (
+          <div className="relative mb-3 shrink-0">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <Search size={14} className="text-[#a1a1aa]" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search student code..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded-lg border border-[#ebebeb] bg-white pl-9 pr-8 py-1.5 text-xs text-[#222222] placeholder-[#a1a1aa] focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316]/50 focus:outline-none transition-all duration-200"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="absolute inset-y-0 right-0 flex items-center pr-2.5 text-[#a1a1aa] hover:text-[#717171] focus:outline-none"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+        )}
+
         <div className="flex-1 overflow-y-auto pr-1">
           {loadingList ? (
             <div className="flex flex-col gap-2">
@@ -167,9 +273,11 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
             </div>
           ) : roster.length === 0 ? (
             <p className="text-sm text-[#717171]">No submissions yet.</p>
+          ) : filteredRoster.length === 0 ? (
+            <p className="text-sm text-[#717171] py-4 text-center">No matching students found.</p>
           ) : (
-            <ul className="m-0 list-none p-0">
-              {roster.map((row) => {
+            <ul className="m-0 list-none pt-1.5 px-1 pb-2 flex flex-col gap-2.5">
+              {filteredRoster.map((row) => {
                 const isSelected = selectedId === row.submissionId;
                 const isRunning = runningId === row.submissionId;
                 return (
@@ -177,19 +285,29 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
                     <button
                       type="button"
                       onClick={() => setSelectedId(row.submissionId)}
-                      className={`mb-1 w-full rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
+                      className={`w-full rounded-xl p-3 text-left text-sm transition-all duration-200 border relative overflow-hidden ${
                         isSelected
-                          ? "bg-[#fef2e8] font-semibold text-[#f97316]"
+                          ? "bg-[#fff7ed] border-[#f97316] shadow-sm shadow-[#f97316]/5 -translate-y-[1px]"
                           : isRunning
-                            ? "bg-[#dbeafe] text-[#222222] hover:bg-[#bfdbfe]"
-                            : "text-[#222222] hover:bg-[#f4f4f5]"
+                            ? "bg-[#eff6ff] border-[#bfdbfe] text-[#222222] shadow-sm"
+                            : "bg-white border-[#ebebeb] text-[#222222] shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] hover:border-gray-300 hover:-translate-y-[1px]"
                       }`}
                     >
-                      <span className="block">{row.studentCode}</span>
+                      <span className={`block font-semibold ${isSelected ? "text-[#ea580c]" : "text-[#222222]"}`}>
+                        {row.studentCode}
+                      </span>
                       <span className="mt-1 block">
                         <RosterScoreCell item={row} />
                       </span>
-                      <span className="mt-0.5 block text-xs font-normal text-[#717171]">
+                      <span className={`mt-0.5 block text-xs font-normal ${
+                        row.submissionStatus === "BuildFailed" || row.submissionStatus === "Error"
+                          ? "text-[#dc2626] font-medium"
+                          : row.submissionStatus === "Done"
+                            ? "text-[#16a34a]"
+                            : row.submissionStatus === "Grading"
+                              ? "text-[#3b82f6] font-medium"
+                              : "text-[#717171]"
+                      }`}>
                         {row.submissionStatus}
                       </span>
                     </button>
@@ -323,28 +441,26 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
               </table>
             </div>
 
-            {results.results.some((r) => r.actualResponse) && (
+            {results.results.length > 0 && (
               <div className="mt-4">
                 <h4 className="mb-2 text-sm font-semibold text-[#222222]">
                   Response details
                 </h4>
-                {results.results
-                  .filter((r) => r.actualResponse)
-                  .map((r) => (
-                    <div key={r.id} className="mb-3">
-                      <p className="text-xs text-[#717171]">
-                        {r.httpMethod} {r.urlTemplate}
+                {results.results.map((r) => (
+                  <div key={r.id} className="mb-3">
+                    <p className="text-xs text-[#717171]">
+                      {r.httpMethod} {r.urlTemplate}
+                    </p>
+                    <pre className="mt-1 max-h-[300px] overflow-auto rounded-lg bg-[#f4f4f5] p-3 text-xs font-mono whitespace-pre-wrap break-all">
+                      {formatResponse(r.actualResponse)}
+                    </pre>
+                    {r.errorMessage && (
+                      <p className="mt-1 text-xs text-[#dc2626]">
+                        {r.errorMessage}
                       </p>
-                      <pre className="mt-1 max-h-[300px] overflow-auto rounded-lg bg-[#f4f4f5] p-3 text-xs font-mono whitespace-pre-wrap break-all">
-                        {formatResponse(r.actualResponse)}
-                      </pre>
-                      {r.errorMessage && (
-                        <p className="mt-1 text-xs text-[#dc2626]">
-                          {r.errorMessage}
-                        </p>
-                      )}
-                    </div>
-                  ))}
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </>

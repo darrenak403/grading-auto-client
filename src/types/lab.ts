@@ -191,6 +191,7 @@ export interface LabPatchStatusRequest {
 
 export interface LabRegradeResult {
   message: string;
+  queued: boolean;
 }
 
 export interface LabRegradeAllResult {

@@ -579,7 +579,13 @@ class ApiClient {
   }
 
   async triggerLabGrading(id: string): Promise<ApiResponse<LabGradeResult>> {
-    return this.post<LabGradeResult>(`/lab-assignments/${id}/grade`);
+    return this.post<LabGradeResult>(`/lab-assignments/${id}/grade-all`);
+  }
+
+  async createLabAssignmentExport(
+    id: string
+  ): Promise<ApiResponse<ExportJob>> {
+    return this.post<ExportJob>(`/lab-assignments/${id}/exports`);
   }
 
   async getLabAssignmentRoster(
@@ -595,6 +601,18 @@ class ApiClient {
   ): Promise<ApiResponse<LabGradingProgressDto>> {
     return this.get<LabGradingProgressDto>(
       `/lab-assignments/${assignmentId}/grading-progress`
+    );
+  }
+
+  async bulkUploadLabSubmissions(
+    assignmentId: string,
+    zipFile: File
+  ): Promise<ApiResponse<LabBulkUploadResult>> {
+    const formData = new FormData();
+    formData.append("file", zipFile);
+    return this.uploadFile<LabBulkUploadResult>(
+      `/lab-assignments/${assignmentId}/bulk-upload`,
+      formData
     );
   }
 
