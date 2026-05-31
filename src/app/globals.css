@@ -601,20 +601,6 @@ select:focus-visible {
   scrollbar-width: none;
 }
 
-/* Lab grading placeholder — decorative slow creep */
-@keyframes lab-grading-creep {
-  0% {
-    width: 5%;
-  }
-  100% {
-    width: 88%;
-  }
-}
-
-.lab-grading-placeholder-fill {
-  animation: lab-grading-creep 50s ease-in-out forwards;
-}
-
 /* ============================================
    PRINT STYLES
    ============================================ */

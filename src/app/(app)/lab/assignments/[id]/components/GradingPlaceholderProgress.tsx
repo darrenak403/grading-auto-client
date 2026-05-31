@@ -2,15 +2,20 @@
 
 import { isRosterScorePending } from "@/lib/lab-utils";
 import type { LabAssignmentRosterItemDto } from "@/types";
+import { BeatLoading } from "respinner";
 
-/** Decorative slow progress bar shown while a score is not yet available. */
+/** Animated grading indicator shown while a score is not yet available. */
 export function GradingPlaceholderProgress({ className = "" }: { className?: string }) {
   return (
-    <div
-      className={`mt-1.5 h-1 w-full min-w-[72px] max-w-[140px] overflow-hidden rounded-full bg-[#f4f4f5] ${className}`}
-      aria-hidden="true"
-    >
-      <div className="lab-grading-placeholder-fill h-full rounded-full bg-[#1d4ed8]" />
+    <div className={`mt-1.5 flex min-h-[18px] items-center ${className}`} aria-hidden="true">
+      <BeatLoading 
+        width={28}
+        count={4}
+        gap={3}
+        duration={0.9}
+        color="#1d4ed8"
+        className="block"
+      />
     </div>
   );
 }
@@ -30,7 +35,6 @@ export function RosterScoreCell({ item }: { item: LabAssignmentRosterItemDto }) 
   if (isRosterScorePending(item)) {
     return (
       <div className="min-w-[100px]">
-        <span className="text-xs font-semibold text-[#1d4ed8]">Grading…</span>
         <GradingPlaceholderProgress />
       </div>
     );
