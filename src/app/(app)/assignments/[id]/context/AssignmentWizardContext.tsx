@@ -213,6 +213,7 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
 
   // Polling
   const pollRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+  const submissionsPollRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
 
   const hasParticipants = participants.length > 0;
   const hasResources = !!(assignment?.databaseSqlPath || assignment?.givenApiBaseUrl || assignment?.hasGivenZip);
@@ -268,6 +269,37 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
       setLoadingSubmissions(false);
     }
   };
+
+  // Poll submissions while any are still being graded, so scores show up
+  // one-by-one as the Worker finishes each student instead of needing a manual reload.
+  React.useEffect(() => {
+    const isGradingActive = submissions.some(
+      (s) => s.status === "Pending" || s.status === "Grading"
+    );
+
+    if (currentStep === 4 && isGradingActive) {
+      if (!submissionsPollRef.current) {
+        submissionsPollRef.current = setInterval(() => {
+          void (async () => {
+            const res = await api.getSubmissionsByAssignment(assignmentId);
+            if (res.status && res.data) {
+              setSubmissions(res.data);
+            }
+          })();
+        }, 2000);
+      }
+    } else if (submissionsPollRef.current) {
+      clearInterval(submissionsPollRef.current);
+      submissionsPollRef.current = null;
+    }
+
+    return () => {
+      if (submissionsPollRef.current) {
+        clearInterval(submissionsPollRef.current);
+        submissionsPollRef.current = null;
+      }
+    };
+  }, [currentStep, submissions, assignmentId]);
 
   const loadParticipants = async () => {
     const res = await api.getParticipants(assignmentId);
