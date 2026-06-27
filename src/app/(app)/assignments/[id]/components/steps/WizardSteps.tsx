@@ -84,8 +84,6 @@ export function Step1() {
     exportJob,
     exporting,
     exportError,
-    gradingRound,
-    setGradingRound,
     handleCreateExport,
     handleDownloadExport,
     participants,
@@ -304,8 +302,6 @@ export function Step2() {
     exportJob,
     exporting,
     exportError,
-    gradingRound,
-    setGradingRound,
     handleCreateExport,
     handleDownloadExport,
     participants,
@@ -568,8 +564,6 @@ export function Step3() {
     exportJob,
     exporting,
     exportError,
-    gradingRound,
-    setGradingRound,
     handleCreateExport,
     handleDownloadExport,
     participants,
@@ -1185,8 +1179,9 @@ export function Step4() {
     exportJob,
     exporting,
     exportError,
-    gradingRound,
-    setGradingRound,
+    rounds,
+    selectedRound,
+    handleSelectRound,
     handleCreateExport,
     handleDownloadExport,
     participants,
@@ -1204,6 +1199,8 @@ export function Step4() {
     setShowUploadForm,
     handleBulkUpload,
     handleImportParticipants,
+    creatingRound,
+    handleCreateRound,
     hasParticipants,
     hasResources,
     hasQuestions,
@@ -1230,22 +1227,31 @@ export function Step4() {
       </div>
 
       <div className="p-4 border border-[#ebebeb] rounded-xl bg-white flex flex-col md:flex-row gap-4 md:items-end shadow-sm mb-6">
-        <div className="flex flex-col gap-1.5 flex-1 max-w-[200px]">
-          <label className="text-[10px] font-bold text-[#717171] uppercase tracking-wider">
-            Grading Round <span className="text-[#f97316]">*</span>
-          </label>
-          <input
-            type="text"
-            value={gradingRound}
-            onChange={(e) => setGradingRound(e.target.value)}
-            placeholder="e.g. Round 1"
-            className="w-full bg-[#fcfcfc] border border-[#ebebeb] rounded-lg px-3 py-2 text-sm text-[#222222] outline-none focus:border-[#f97316] focus:bg-white transition-colors"
-          />
-        </div>
+          <div className="flex flex-col gap-1.5 flex-1 max-w-[200px]">
+            <label className="text-[10px] font-bold text-[#717171] uppercase tracking-wider">
+              Grading Round
+            </label>
+            <Select
+              value={selectedRound ?? undefined}
+              onValueChange={(val: string) => handleSelectRound(val)}
+              disabled={rounds.length === 0}
+            >
+              <SelectTrigger className="w-full h-[38px] px-3 py-2 text-sm border-[#ebebeb] rounded-lg text-[#222222] focus:ring-0 focus:ring-offset-0 focus:border-[#f97316]">
+                <SelectValue placeholder="No round yet" />
+              </SelectTrigger>
+              <SelectContent>
+                {rounds.map((r: string) => (
+                  <SelectItem key={r} value={r}>
+                    {r}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
         <div className="flex flex-col gap-1.5 flex-1">
           <label className="text-[10px] font-bold text-[#717171] uppercase tracking-wider">
-            1. Submissions ZIP File
+            1. Submissions ZIP File (add to selected round)
           </label>
           <div className="flex items-center gap-2">
             <label className="flex-1 flex items-center justify-between px-3 py-2 border border-[#ebebeb] rounded-lg bg-[#fcfcfc] cursor-pointer hover:border-[#f97316] hover:bg-white transition-all select-none">
@@ -1271,13 +1277,40 @@ export function Step4() {
           </div>
         </div>
 
+        <div className="flex flex-col gap-1.5 flex-1">
+          <label className="text-[10px] font-bold text-[#717171] uppercase tracking-wider">
+            2. Create New Round
+          </label>
+          <div className="flex items-center gap-2">
+            <label className="flex-1 flex items-center justify-between px-3 py-2 border border-[#ebebeb] rounded-lg bg-[#fcfcfc] cursor-pointer hover:border-[#f97316] hover:bg-white transition-all select-none">
+              <span className="text-xs text-[#717171] font-medium truncate max-w-[150px] md:max-w-[250px]">
+                {creatingRound ? 'Processing...' : 'Select ZIP for new round...'}
+              </span>
+              <Upload size={14} className="text-[#b0b0b0]" />
+              <input
+                type="file"
+                accept=".zip"
+                disabled={creatingRound}
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    handleCreateRound(file)
+                    e.target.value = ''
+                  }
+                }}
+                className="hidden"
+              />
+            </label>
+          </div>
+        </div>
+
         <div className="flex flex-col gap-1.5 shrink-0">
           <label className="text-[10px] font-bold text-[#717171] uppercase tracking-wider hidden md:block opacity-0">
             Action
           </label>
           <button
             onClick={handleTriggerGrading}
-            disabled={exporting || !gradingRound.trim()}
+            disabled={exporting}
             className="h-[38px] px-5 bg-[#f97316] hover:bg-[#ea580c] text-white rounded-xl text-xs font-semibold transition-all cursor-pointer disabled:bg-[#ebebeb] disabled:text-[#b0b0b0] shadow-sm select-none flex items-center justify-center min-w-[140px]"
           >
             {exporting ? 'Processing...' : 'Trigger Grading'}
@@ -1313,7 +1346,8 @@ export function Step4() {
       ) : (
         <div className="mt-6">
           <h3 className="text-lg font-semibold text-[#222222] mb-4">
-            Grading Progress & Results ({submissions.length})
+            Grading Progress & Results
+            {selectedRound ? ` — ${selectedRound}` : ''} ({submissions.length})
           </h3>
           <div className="border border-[#ebebeb] rounded-2xl overflow-hidden bg-white">
             <div className="w-full">
@@ -1368,13 +1402,15 @@ export function Step4() {
                         >
                           View
                         </button>
-                        <button
-                          onClick={() => handleTriggerGradingForSubmission(s.id)}
-                          disabled={triggering === s.id}
-                          className="px-2.5 py-1.5 bg-white border border-[#dddddd] hover:border-[#f97316] text-[#222222] text-[10px] font-semibold rounded-xl transition-all cursor-pointer active:scale-95 hover:bg-[#fff7ed]"
-                        >
-                          {triggering === s.id ? '...' : 'Regrade'}
-                        </button>
+                        {s.latestJobStatus === 'Failed' && (
+                          <button
+                            onClick={() => handleTriggerGradingForSubmission(s.id)}
+                            disabled={triggering === s.id}
+                            className="px-2.5 py-1.5 bg-white border border-[#dddddd] hover:border-[#f97316] text-[#222222] text-[10px] font-semibold rounded-xl transition-all cursor-pointer active:scale-95 hover:bg-[#fff7ed]"
+                          >
+                            {triggering === s.id ? '...' : 'Retry'}
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDeleteSubmission(s.id)}
                           className="p-1.5 text-[#717171] hover:text-[#f97316] hover:bg-[#fff7ed] rounded-full transition-all cursor-pointer active:scale-95"
@@ -1461,8 +1497,9 @@ export function Step5() {
     exportJob,
     exporting,
     exportError,
-    gradingRound,
-    setGradingRound,
+    rounds,
+    selectedRound,
+    handleSelectRound,
     handleCreateExport,
     handleDownloadExport,
     participants,
@@ -1508,13 +1545,22 @@ export function Step5() {
           <label className="text-[11px] font-semibold text-[#717171] uppercase tracking-wider">
             Grading Round
           </label>
-          <input
-            type="text"
-            value={gradingRound}
-            onChange={(e) => setGradingRound(e.target.value)}
-            placeholder="e.g. Round 1"
-            className="w-full bg-white border border-[#dddddd] rounded-lg px-4 py-2.5 text-sm text-[#222222] outline-none focus:border-[#f97316]"
-          />
+          <Select
+            value={selectedRound ?? undefined}
+            onValueChange={(val: string) => handleSelectRound(val)}
+            disabled={rounds.length === 0}
+          >
+            <SelectTrigger className="w-full h-[42px] px-4 py-2.5 text-sm border-[#dddddd] rounded-lg text-[#222222] focus:ring-0 focus:ring-offset-0 focus:border-[#f97316]">
+              <SelectValue placeholder="No round yet" />
+            </SelectTrigger>
+            <SelectContent>
+              {rounds.map((r: string) => (
+                <SelectItem key={r} value={r}>
+                  {r}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {exportError && (

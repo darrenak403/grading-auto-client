@@ -92,6 +92,8 @@ export interface Submission {
   createdAt: string;
   totalScore?: number;
   maxScore?: number;
+  gradingRound: string;
+  latestJobStatus?: JobStatus | null;
 }
 
 export interface GradingJob {

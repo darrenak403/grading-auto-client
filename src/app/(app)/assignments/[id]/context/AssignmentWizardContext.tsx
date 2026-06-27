@@ -198,7 +198,10 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
   const [exportJob, setExportJob] = React.useState<ExportJob | null>(null);
   const [exporting, setExporting] = React.useState(false);
   const [exportError, setExportError] = React.useState<string | null>(null);
-  const [gradingRound, setGradingRound] = React.useState("Round 1");
+
+  // Grading rounds (one Submission set per round; "Lần N" labels auto-generated server-side)
+  const [rounds, setRounds] = React.useState<string[]>([]);
+  const [selectedRound, setSelectedRound] = React.useState<string | null>(null);
 
   // Participants
   const [participants, setParticipants] = React.useState<
@@ -210,6 +213,7 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
   const [importResult, setImportResult] = React.useState<string | null>(null);
   const [uploading, setUploading] = React.useState(false);
   const [showUploadForm, setShowUploadForm] = React.useState(false);
+  const [creatingRound, setCreatingRound] = React.useState(false);
 
   // Polling
   const pollRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
@@ -223,7 +227,7 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
     loadAssignment();
     loadParticipants();
     loadQuestions();
-    loadSubmissions();
+    loadRounds();
   }, [assignmentId]);
 
   // Load data based on current step
@@ -231,7 +235,7 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
     if (currentStep === 1) loadParticipants();
     if (currentStep === 2) loadAssignment();
     if (currentStep === 3) loadQuestions();
-    if (currentStep === 4) loadSubmissions();
+    if (currentStep === 4 || currentStep === 5) loadRounds();
   }, [currentStep]);
 
   const loadAssignment = async () => {
@@ -258,10 +262,14 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
     }
   };
 
-  const loadSubmissions = async () => {
+  const loadSubmissions = async (round?: string | null) => {
     try {
       setLoadingSubmissions(true);
-      const res = await api.getSubmissionsByAssignment(assignmentId);
+      const res = await api.getSubmissionsByAssignment(
+        assignmentId,
+        undefined,
+        round ?? selectedRound ?? undefined
+      );
       if (res.status && res.data) {
         setSubmissions(res.data);
       }
@@ -269,6 +277,25 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
       setLoadingSubmissions(false);
     }
   };
+
+  const loadRounds = async () => {
+    const res = await api.getAssignmentRounds(assignmentId);
+    if (res.status && res.data) {
+      setRounds(res.data);
+      // Default to the latest round whenever the current selection no longer exists
+      // (first load, or after a new round was just created).
+      if (res.data.length > 0 && (!selectedRound || !res.data.includes(selectedRound))) {
+        const latest = res.data[res.data.length - 1];
+        setSelectedRound(latest);
+        await loadSubmissions(latest);
+      }
+    }
+  };
+
+  const handleSelectRound = React.useCallback(async (round: string) => {
+    setSelectedRound(round);
+    await loadSubmissions(round);
+  }, [assignmentId]);
 
   // Poll submissions while any are still being graded, so scores show up
   // one-by-one as the Worker finishes each student instead of needing a manual reload.
@@ -281,7 +308,7 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
       if (!submissionsPollRef.current) {
         submissionsPollRef.current = setInterval(() => {
           void (async () => {
-            const res = await api.getSubmissionsByAssignment(assignmentId);
+            const res = await api.getSubmissionsByAssignment(assignmentId, undefined, selectedRound ?? undefined);
             if (res.status && res.data) {
               setSubmissions(res.data);
             }
@@ -299,7 +326,7 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
         submissionsPollRef.current = null;
       }
     };
-  }, [currentStep, submissions, assignmentId]);
+  }, [currentStep, submissions, assignmentId, selectedRound]);
 
   const loadParticipants = async () => {
     const res = await api.getParticipants(assignmentId);
@@ -342,7 +369,7 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
     try {
       setExporting(true);
       setExportError(null);
-      const res = await api.triggerGrading(assignmentId, gradingRound);
+      const res = await api.triggerGrading(assignmentId);
       if (res.status) {
         setExportError("Bulk grading worker triggered successfully!");
         setExportJob(null);
@@ -355,7 +382,7 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
     } finally {
       setExporting(false);
     }
-  }, [assignmentId, gradingRound]);
+  }, [assignmentId]);
 
   const startPolling = (jobId: string) => {
     if (pollRef.current) clearInterval(pollRef.current);
@@ -558,10 +585,10 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
     try {
       setUploading(true);
       setBulkResult(null);
-      const res = await api.bulkUpload(assignmentId, fileToUpload, gradingRound || undefined);
+      const res = await api.bulkUpload(assignmentId, fileToUpload);
       if (res.status && res.data) {
         setBulkResult(`Created: ${res.data.created}, Parsed: ${res.data.parsed}, Missing info: ${res.data.missing}`);
-        loadSubmissions();
+        await loadRounds();
         setBulkFile(null);
       } else {
         setBulkResult(res.message || "Failed to upload zip file");
@@ -570,6 +597,24 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
       setBulkResult("Error during bulk upload zip file");
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleCreateRound = async (fileInput: File) => {
+    try {
+      setCreatingRound(true);
+      setBulkResult(null);
+      const res = await api.createGradingRound(assignmentId, fileInput);
+      if (res.status && res.data) {
+        setBulkResult(`New round created: ${res.data.created} created, Parsed: ${res.data.parsed}, Missing info: ${res.data.missing}`);
+        await loadRounds();
+      } else {
+        setBulkResult(res.message || "Failed to create new grading round");
+      }
+    } catch {
+      setBulkResult("Error while creating new grading round");
+    } finally {
+      setCreatingRound(false);
     }
   };
 
@@ -600,7 +645,7 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
     try {
       setExporting(true);
       setExportError(null);
-      const res = await api.createExport({ assignmentId, gradingRound });
+      const res = await api.createExport({ assignmentId, gradingRound: selectedRound ?? undefined });
       if (res.status && res.data) {
         setExportJob(res.data);
         startPolling(res.data.id);
@@ -658,12 +703,13 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
       questionTestCases, setQuestionTestCases, loadingTestCases,
       submissions, setSubmissions, loadingSubmissions, triggering, handleDeleteSubmission, handleTriggerGradingForSubmission, handleDeleteTestCaseInline,
       selectedSubmissionId, setSelectedSubmissionId,
-      exportJob, exporting, exportError, gradingRound, setGradingRound, handleCreateExport, handleDownloadExport,
+      exportJob, exporting, exportError, rounds, selectedRound, setSelectedRound, handleSelectRound, handleCreateExport, handleDownloadExport,
       participants, setParticipants, bulkFile, setBulkFile, bulkResult, setBulkResult,
       importFile, setImportFile, importResult, setImportResult,
       uploading, showUploadForm, setShowUploadForm, handleBulkUpload, handleImportParticipants,
+      creatingRound, handleCreateRound,
       hasParticipants, hasResources, hasQuestions,
-      loadAssignment, loadParticipants, loadQuestions, loadSubmissions
+      loadAssignment, loadParticipants, loadQuestions, loadSubmissions, loadRounds
     }}>
       {children}
     </AssignmentWizardContext.Provider>
