@@ -278,13 +278,15 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
     }
   };
 
-  const loadRounds = async () => {
+  // forceLatest: skip the "is current selection still valid" guard and select the
+  // newest round unconditionally — needed right after creating a round, since the
+  // previously selected round remains a valid member of the refreshed list and the
+  // guard alone would never switch to the round that was just created.
+  const loadRounds = async (forceLatest = false) => {
     const res = await api.getAssignmentRounds(assignmentId);
     if (res.status && res.data) {
       setRounds(res.data);
-      // Default to the latest round whenever the current selection no longer exists
-      // (first load, or after a new round was just created).
-      if (res.data.length > 0 && (!selectedRound || !res.data.includes(selectedRound))) {
+      if (res.data.length > 0 && (forceLatest || !selectedRound || !res.data.includes(selectedRound))) {
         const latest = res.data[res.data.length - 1];
         setSelectedRound(latest);
         await loadSubmissions(latest);
@@ -373,7 +375,7 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
       if (res.status) {
         setExportError("Bulk grading worker triggered successfully!");
         setExportJob(null);
-        await loadSubmissions();
+        await loadSubmissions(selectedRound);
       } else {
         setExportError(res.message || "Failed to trigger grading");
       }
@@ -382,7 +384,7 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
     } finally {
       setExporting(false);
     }
-  }, [assignmentId]);
+  }, [assignmentId, selectedRound]);
 
   const startPolling = (jobId: string) => {
     if (pollRef.current) clearInterval(pollRef.current);
@@ -607,7 +609,10 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
       const res = await api.createGradingRound(assignmentId, fileInput);
       if (res.status && res.data) {
         setBulkResult(`New round created: ${res.data.created} created, Parsed: ${res.data.parsed}, Missing info: ${res.data.missing}`);
-        await loadRounds();
+        // The create-round response carries no round identifier, so force-select
+        // the newest round after refetching — loadRounds()'s own guard wouldn't
+        // switch here since the previously selected round is still in the list.
+        await loadRounds(true);
       } else {
         setBulkResult(res.message || "Failed to create new grading round");
       }
