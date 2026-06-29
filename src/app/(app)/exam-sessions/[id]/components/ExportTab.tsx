@@ -7,14 +7,18 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 
 interface ExportTabProps {
   sessionId: string;
+  assignmentId: string;
   gradingRound: string;
   setGradingRound: (round: string) => void;
+  rounds: string[];
 }
 
 export function ExportTab({
   sessionId,
+  assignmentId,
   gradingRound,
   setGradingRound,
+  rounds,
 }: ExportTabProps) {
   const [exportJob, setExportJob] = React.useState<ExportJob | null>(null);
   const [exporting, setExporting] = React.useState(false);
@@ -26,7 +30,7 @@ export function ExportTab({
     try {
       setExporting(true);
       setExportError(null);
-      const res = await api.createExamSessionExport(sessionId, gradingRound);
+      const res = await api.createExamSessionExport(sessionId, gradingRound, assignmentId || undefined);
       if (res.status && res.data) {
         setExportJob(res.data);
         if (pollRef.current) clearInterval(pollRef.current);
@@ -50,7 +54,7 @@ export function ExportTab({
     } finally {
       setExporting(false);
     }
-  }, [sessionId, gradingRound]);
+  }, [sessionId, gradingRound, assignmentId]);
 
   // Cleanup polling on unmount
   React.useEffect(() => {
@@ -130,11 +134,9 @@ export function ExportTab({
           >
             Grading Round
           </label>
-          <input
-            type="text"
+          <select
             value={gradingRound}
             onChange={(e) => setGradingRound(e.target.value)}
-            placeholder="e.g. Round 1"
             style={{
               width: "100%",
               backgroundColor: "#ffffff",
@@ -152,7 +154,16 @@ export function ExportTab({
             onBlur={(e) => {
               e.target.style.borderColor = "#ebebeb";
             }}
-          />
+          >
+            {rounds.length === 0 && (
+              <option value={gradingRound}>{gradingRound}</option>
+            )}
+            {rounds.map((round) => (
+              <option key={round} value={round}>
+                {round}
+              </option>
+            ))}
+          </select>
         </div>
 
         {exportError && (

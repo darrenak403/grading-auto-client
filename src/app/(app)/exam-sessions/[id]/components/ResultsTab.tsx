@@ -11,6 +11,7 @@ interface ResultsTabProps {
   resultsError: string | null;
   gradingRound: string;
   setGradingRound: (round: string) => void;
+  rounds: string[];
   loadResults: () => void;
   setSelectedSubmissionId: (id: string | null) => void;
 }
@@ -20,6 +21,7 @@ export function ResultsTab({
   resultsError,
   gradingRound,
   setGradingRound,
+  rounds,
   loadResults,
   setSelectedSubmissionId,
 }: ResultsTabProps) {
@@ -47,11 +49,9 @@ export function ResultsTab({
           Results ({results.length} submissions)
         </h2>
         <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-          <input
-            type="text"
+          <select
             value={gradingRound}
             onChange={(e) => setGradingRound(e.target.value)}
-            placeholder="Grading round"
             style={{
               padding: "8px 12px",
               backgroundColor: "#ffffff",
@@ -62,7 +62,16 @@ export function ResultsTab({
               fontSize: "0.875rem",
               outline: "none",
             }}
-          />
+          >
+            {rounds.length === 0 && (
+              <option value={gradingRound}>{gradingRound}</option>
+            )}
+            {rounds.map((round) => (
+              <option key={round} value={round}>
+                {round}
+              </option>
+            ))}
+          </select>
           <button
             onClick={loadResults}
             style={{

@@ -6,6 +6,17 @@ import { api } from "@/lib";
 import type { Assignment, Question, Submission, ExportJob, TestCase, CreateTestCaseRequest } from "@/types";
 import { TestCaseFormItem, FormQuestionItem } from "../types";
 
+function buildExportFilename(job: ExportJob, assignmentId: string): string {
+  const label = job.assignmentCode || job.examSessionTitle || job.labAssignmentTitle || `assignment-${assignmentId}`;
+  const round = job.gradingRound ? `_${job.gradingRound}` : "";
+  const date = new Date().toISOString().slice(0, 10);
+  // Only strip characters invalid in filenames (path separators, reserved chars) and
+  // collapse whitespace — must NOT touch Vietnamese diacritics, which \w would mangle.
+  return `PE_${label}${round}_${date}.xlsx`
+    .replace(/[\\/:*?"<>|]+/g, "_")
+    .replace(/\s+/g, " ");
+}
+
 export const AssignmentWizardContext = React.createContext<any>(null);
 
 export function AssignmentWizardProvider({ children }: { children: React.ReactNode }) {
@@ -199,7 +210,7 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
   const [exporting, setExporting] = React.useState(false);
   const [exportError, setExportError] = React.useState<string | null>(null);
 
-  // Grading rounds (one Submission set per round; "Lần N" labels auto-generated server-side)
+  // Grading rounds (one Submission set per round; "Round N" labels auto-generated server-side)
   const [rounds, setRounds] = React.useState<string[]>([]);
   const [selectedRound, setSelectedRound] = React.useState<string | null>(null);
 
@@ -371,7 +382,7 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
     try {
       setExporting(true);
       setExportError(null);
-      const res = await api.triggerGrading(assignmentId);
+      const res = await api.triggerGrading(assignmentId, selectedRound);
       if (res.status) {
         setExportError("Bulk grading worker triggered successfully!");
         setExportJob(null);
@@ -673,7 +684,7 @@ export function AssignmentWizardProvider({ children }: { children: React.ReactNo
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = exportJob.assignmentCode || `assignment-${assignmentId}-export.xlsx`;
+        a.download = buildExportFilename(exportJob, assignmentId);
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

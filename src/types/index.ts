@@ -76,6 +76,8 @@ export interface TestCase {
 export interface Participant {
   id: string;
   assignmentId: string;
+  assignmentCode?: string;
+  assignmentTitle?: string;
   username: string;
   studentCode: string;
 }

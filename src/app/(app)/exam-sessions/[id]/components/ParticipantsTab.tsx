@@ -44,6 +44,23 @@ export function ParticipantsTab({
           columns={[
             { key: "studentCode", header: "Student Code" },
             { key: "username", header: "Username" },
+            {
+              key: "assignmentCode",
+              header: "Mã đề",
+              render: (p: Participant) => (
+                <span
+                  style={{
+                    padding: "2px 8px",
+                    backgroundColor: "#f4f4f5",
+                    borderRadius: "12px",
+                    fontSize: "0.8125rem",
+                    fontWeight: 600,
+                  }}
+                >
+                  {p.assignmentCode || "-"}
+                </span>
+              ),
+            },
           ]}
           maxHeight={550}
           data={participants}
