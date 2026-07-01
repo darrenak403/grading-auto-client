@@ -35,6 +35,9 @@ export default function ExamSessionDetailPage() {
   const [participantsError, setParticipantsError] = React.useState<string | null>(null);
   const [resultsError, setResultsError] = React.useState<string | null>(null);
   const [gradingRound, setGradingRound] = React.useState("Round 1");
+  const [rounds, setRounds] = React.useState<string[]>([]);
+  // "" = all mã đề (assignments) in this session
+  const [assignmentId, setAssignmentId] = React.useState<string>("");
 
   const loadSession = React.useCallback(async () => {
     try {
@@ -61,29 +64,61 @@ export default function ExamSessionDetailPage() {
 
   const loadParticipants = React.useCallback(async () => {
     setParticipantsError(null);
-    const res = await api.getExamSessionParticipants(sessionId);
+    const res = await api.getExamSessionParticipants(sessionId, assignmentId || undefined);
     if (res.status && res.data) {
       setParticipants(res.data);
     } else {
       setParticipantsError(res.message || "Failed to load participants");
     }
-  }, [sessionId]);
+  }, [sessionId, assignmentId]);
 
-  const loadResults = React.useCallback(async () => {
+  const loadResultsForRound = React.useCallback(async (round: string) => {
     setResultsError(null);
-    const res = await api.getExamSessionResults(sessionId, gradingRound);
+    const res = await api.getExamSessionResults(sessionId, round, assignmentId || undefined);
     if (res.status && res.data) {
       setResults(res.data);
     } else {
       setResultsError(res.message || "Failed to load results");
     }
-  }, [sessionId, gradingRound]);
+  }, [sessionId, assignmentId]);
 
-  const handleTabChange = React.useCallback((tab: Tab) => {
+  const loadResults = React.useCallback(
+    () => loadResultsForRound(gradingRound),
+    [gradingRound, loadResultsForRound]
+  );
+
+  const loadRounds = React.useCallback(async (): Promise<string[]> => {
+    const res = await api.getExamSessionRounds(sessionId, assignmentId || undefined);
+    if (res.status && res.data) {
+      setRounds(res.data);
+      return res.data;
+    }
+    return [];
+  }, [sessionId, assignmentId]);
+
+  const refreshRoundScopedTab = React.useCallback(async (tab: Tab) => {
+    const availableRounds = await loadRounds();
+    const targetRound =
+      availableRounds.length > 0 && !availableRounds.includes(gradingRound)
+        ? availableRounds[availableRounds.length - 1]
+        : gradingRound;
+    if (targetRound !== gradingRound) setGradingRound(targetRound);
+    if (tab === "results") loadResultsForRound(targetRound);
+  }, [loadRounds, loadResultsForRound, gradingRound]);
+
+  const handleTabChange = React.useCallback(async (tab: Tab) => {
     setActiveTab(tab);
     if (tab === "participants") loadParticipants();
-    if (tab === "results") loadResults();
-  }, [loadParticipants, loadResults]);
+    if (tab === "results" || tab === "export") refreshRoundScopedTab(tab);
+  }, [loadParticipants, refreshRoundScopedTab]);
+
+  // Re-scope data to the selected mã đề (assignment) whenever it changes
+  // while the user is on a tab that depends on it.
+  React.useEffect(() => {
+    if (activeTab === "participants") loadParticipants();
+    if (activeTab === "results" || activeTab === "export") refreshRoundScopedTab(activeTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assignmentId]);
 
   if (loading) {
     return (
@@ -218,6 +253,46 @@ export default function ExamSessionDetailPage() {
         ))}
       </div>
 
+      {/* Mã đề (assignment) selector — scopes participants/results/export to one assignment */}
+      {activeTab !== "assignments" && (
+        <div style={{ marginBottom: "24px" }}>
+          <label
+            style={{
+              display: "block",
+              fontFamily: "Inter, Arial, sans-serif",
+              fontSize: "0.8125rem",
+              fontWeight: 600,
+              color: "#717171",
+              marginBottom: "6px",
+            }}
+          >
+            Mã đề
+          </label>
+          <select
+            value={assignmentId}
+            onChange={(e) => setAssignmentId(e.target.value)}
+            style={{
+              padding: "8px 12px",
+              backgroundColor: "#ffffff",
+              color: "#222222",
+              border: "1px solid #ebebeb",
+              borderRadius: "12px",
+              fontFamily: "Inter, Arial, sans-serif",
+              fontSize: "0.875rem",
+              outline: "none",
+              minWidth: "220px",
+            }}
+          >
+            <option value="">All mã đề</option>
+            {assignments.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.code} — {a.title}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Tab Content */}
       {activeTab === "assignments" && (
         <AssignmentsTab
@@ -241,6 +316,7 @@ export default function ExamSessionDetailPage() {
           resultsError={resultsError}
           gradingRound={gradingRound}
           setGradingRound={setGradingRound}
+          rounds={rounds}
           loadResults={loadResults}
           setSelectedSubmissionId={setSelectedSubmissionId}
         />
@@ -249,8 +325,10 @@ export default function ExamSessionDetailPage() {
       {activeTab === "export" && (
         <ExportTab
           sessionId={sessionId}
+          assignmentId={assignmentId}
           gradingRound={gradingRound}
           setGradingRound={setGradingRound}
+          rounds={rounds}
         />
       )}
 

@@ -136,9 +136,10 @@ export function DetailSubmissionDialog({
     }
   }, [submissionId, onRefresh]);
 
-  const totalScore = results.reduce((sum, r) => sum + r.finalScore, 0);
+  const effectiveScore = (r: QuestionResult) => r.adjustedScore ?? r.finalScore;
+  const totalScore = results.reduce((sum, r) => sum + effectiveScore(r), 0);
   const maxScore = results.reduce((sum, r) => sum + r.maxScore, 0);
-  const passCount = results.filter((r) => r.passed).length;
+  const passCount = results.filter((r) => effectiveScore(r) >= r.maxScore).length;
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "results", label: "Grading Results" },
@@ -218,9 +219,7 @@ export function DetailSubmissionDialog({
                       <Award size={13} className="text-[#717171]" />
                       Total Score:{" "}
                       <strong className="text-[#222222]">
-                        {submission.totalScore !== undefined
-                          ? `${submission.totalScore} / ${submission.maxScore}`
-                          : `${totalScore} / ${maxScore}`}
+                        {totalScore} / {maxScore}
                       </strong>
                     </span>
 
@@ -333,18 +332,18 @@ export function DetailSubmissionDialog({
                                 </div>
                                 <div className="text-right">
                                   <div
-                                    className={`text-xl font-bold font-sans ${result.finalScore / result.maxScore >= 0.5
+                                    className={`text-xl font-bold font-sans ${effectiveScore(result) / result.maxScore >= 0.5
                                       ? "text-emerald-600"
                                       : "text-[#f97316]"
                                       }`}
                                   >
-                                    {result.finalScore}
+                                    {effectiveScore(result)}
                                     <span className="text-xs text-[#717171] font-normal">
                                       {" "}
                                       / {result.maxScore}
                                     </span>
                                   </div>
-                                  {result.adjustedScore !== undefined && (
+                                  {result.adjustedScore !== undefined && result.adjustedScore !== null && (
                                     <span className="inline-block mt-1 bg-orange-50 border border-orange-100 text-[#f97316] text-[10px] font-bold px-2 py-0.5 rounded-full select-none">
                                       Score Adjusted
                                     </span>

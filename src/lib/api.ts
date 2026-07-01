@@ -229,28 +229,49 @@ class ApiClient {
   }
 
   async getExamSessionParticipants(
-    sessionId: string
+    sessionId: string,
+    assignmentId?: string
   ): Promise<ApiResponse<Participant[]>> {
-    return this.get<Participant[]>(`/exam-sessions/${sessionId}/participants`);
+    const query = assignmentId
+      ? `?assignmentId=${encodeURIComponent(assignmentId)}`
+      : "";
+    return this.get<Participant[]>(
+      `/exam-sessions/${sessionId}/participants${query}`
+    );
   }
 
   async getExamSessionResults(
     sessionId: string,
-    gradingRound?: string
+    gradingRound?: string,
+    assignmentId?: string
   ): Promise<ApiResponse<SessionSubmissionResult[]>> {
-    const query = gradingRound
-      ? `?gradingRound=${encodeURIComponent(gradingRound)}`
-      : "";
+    const params = new URLSearchParams();
+    if (gradingRound) params.set("gradingRound", gradingRound);
+    if (assignmentId) params.set("assignmentId", assignmentId);
+    const query = params.toString() ? `?${params.toString()}` : "";
     return this.get<SessionSubmissionResult[]>(
       `/exam-sessions/${sessionId}/results${query}`
     );
   }
 
+  async getExamSessionRounds(
+    sessionId: string,
+    assignmentId?: string
+  ): Promise<ApiResponse<string[]>> {
+    const query = assignmentId
+      ? `?assignmentId=${encodeURIComponent(assignmentId)}`
+      : "";
+    return this.get<string[]>(`/exam-sessions/${sessionId}/rounds${query}`);
+  }
+
   async createExamSessionExport(
     sessionId: string,
-    gradingRound?: string
+    gradingRound?: string,
+    assignmentId?: string
   ): Promise<ApiResponse<ExportJob>> {
-    const body = gradingRound ? { gradingRound } : {};
+    const body: { gradingRound?: string; assignmentId?: string } = {};
+    if (gradingRound) body.gradingRound = gradingRound;
+    if (assignmentId) body.assignmentId = assignmentId;
     return this.post<ExportJob>(`/exam-sessions/${sessionId}/exports`, body);
   }
 
@@ -330,37 +351,48 @@ class ApiClient {
 
   async bulkUpload(
     assignmentId: string,
-    zipFile: File,
-    gradingRound?: string
+    zipFile: File
   ): Promise<ApiResponse<BulkUploadResult>> {
     const formData = new FormData();
     formData.append("file", zipFile);
-    if (gradingRound) {
-      formData.append("gradingRound", gradingRound);
-    }
     return this.uploadFile<BulkUploadResult>(
       `/assignments/${assignmentId}/bulk-upload`,
       formData
     );
   }
 
-  async triggerGrading(
+  async createGradingRound(
     assignmentId: string,
-    gradingRound?: string
-  ): Promise<ApiResponse<number>> {
-    const query = gradingRound
-      ? `?gradingRound=${encodeURIComponent(gradingRound)}`
-      : "";
+    zipFile: File
+  ): Promise<ApiResponse<BulkUploadResult>> {
+    const formData = new FormData();
+    formData.append("file", zipFile);
+    return this.uploadFile<BulkUploadResult>(
+      `/assignments/${assignmentId}/rounds`,
+      formData
+    );
+  }
+
+  async getAssignmentRounds(
+    assignmentId: string
+  ): Promise<ApiResponse<string[]>> {
+    return this.get<string[]>(`/assignments/${assignmentId}/rounds`);
+  }
+
+  async triggerGrading(assignmentId: string, gradingRound?: string | null): Promise<ApiResponse<number>> {
+    const query = gradingRound ? `?gradingRound=${encodeURIComponent(gradingRound)}` : "";
     return this.post<number>(`/assignments/${assignmentId}/grade${query}`);
   }
 
   async getSubmissionsByAssignment(
     assignmentId: string,
-    studentCode?: string
+    studentCode?: string,
+    gradingRound?: string
   ): Promise<ApiResponse<Submission[]>> {
-    const query = studentCode
-      ? `?studentCode=${encodeURIComponent(studentCode)}`
-      : "";
+    const params = new URLSearchParams();
+    if (studentCode) params.set("studentCode", studentCode);
+    if (gradingRound) params.set("gradingRound", gradingRound);
+    const query = params.toString() ? `?${params.toString()}` : "";
     return this.get<Submission[]>(
       `/assignments/${assignmentId}/submissions${query}`
     );

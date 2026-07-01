@@ -76,6 +76,8 @@ export interface TestCase {
 export interface Participant {
   id: string;
   assignmentId: string;
+  assignmentCode?: string;
+  assignmentTitle?: string;
   username: string;
   studentCode: string;
 }
@@ -92,6 +94,8 @@ export interface Submission {
   createdAt: string;
   totalScore?: number;
   maxScore?: number;
+  gradingRound: string;
+  latestJobStatus?: JobStatus | null;
 }
 
 export interface GradingJob {
