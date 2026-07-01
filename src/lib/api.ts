@@ -39,6 +39,8 @@ import type {
   LabRegradeAllResult,
   LabAssignmentRosterItemDto,
   LabGradingProgressDto,
+  LabSyncSupabaseRequest,
+  LabSyncSupabaseResult,
 } from "@/types";
 
 class ApiClient {
@@ -586,6 +588,16 @@ class ApiClient {
     id: string
   ): Promise<ApiResponse<ExportJob>> {
     return this.post<ExportJob>(`/lab-assignments/${id}/exports`);
+  }
+
+  async syncLabAssignmentSupabase(
+    id: string,
+    body?: LabSyncSupabaseRequest
+  ): Promise<ApiResponse<LabSyncSupabaseResult>> {
+    return this.post<LabSyncSupabaseResult>(
+      `/lab-assignments/${id}/sync-supabase`,
+      body
+    );
   }
 
   async getLabAssignmentRoster(

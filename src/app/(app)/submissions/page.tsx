@@ -6,7 +6,13 @@ import { api } from "@/lib";
 import type { Submission } from "@/types";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { TableSkeleton, useConfirm } from "@/components/ui";
+import {
+  PageError,
+  PageShell,
+  TableSkeleton,
+  TableSurface,
+  useConfirm,
+} from "@/components/ui";
 import { Table } from "@/components/ui/Table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DetailSubmissionDialog } from "@/components/shared/DetailSubmissionDialog";
@@ -194,30 +200,18 @@ export default function SubmissionsPage() {
   ];
 
   return (
-    <div className="py-10 px-6 max-w-6xl mx-auto w-full font-sans select-none">
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-          <p className="text-xs font-semibold text-[#717171] uppercase tracking-wider mb-2">
-            03 / Submissions
-          </p>
-          <h1 className="text-3xl font-semibold text-[#222222] tracking-tight">
-            Student Submissions
-          </h1>
-          <p className="text-sm text-[#717171] mt-1.5 leading-relaxed">
-            Manage and view detailed progress and grading results of student submissions.
-          </p>
-        </div>
-      </div>
+    <PageShell
+      eyebrow="PE Exam Grading / Submissions"
+      title="Student Submissions"
+      description="Review uploaded PE submissions, grading status, artifacts, and score details."
+    >
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-800 text-sm mb-6">
-          {error}
-        </div>
+        <PageError>{error}</PageError>
       )}
 
       {/* Filter */}
-      <div className="mb-4">
+      <div className="mb-4 flex flex-wrap items-center gap-3">
         <Select
           value={filterAssignmentId || "all"}
           onValueChange={(val) => {
@@ -252,7 +246,7 @@ export default function SubmissionsPage() {
           }
         />
       ) : (
-        <div className="border border-[#ebebeb] rounded-2xl overflow-hidden bg-white shadow-sm shadow-black/5">
+        <TableSurface>
           <Table
             columns={columns}
             data={submissions}
@@ -261,7 +255,7 @@ export default function SubmissionsPage() {
             emptyMessage="No submissions found."
             borderless={true}
           />
-        </div>
+        </TableSurface>
       )}
 
       <DetailSubmissionDialog
@@ -272,6 +266,6 @@ export default function SubmissionsPage() {
         }}
         onRefresh={loadSubmissions}
       />
-    </div>
+    </PageShell>
   );
 }

@@ -6,7 +6,13 @@ import { api } from "@/lib";
 import type { ExamSession } from "@/types";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Table } from "@/components/ui/Table";
-import { TableSkeleton, useConfirm } from "@/components/ui";
+import {
+  Button,
+  PageError,
+  PageShell,
+  TableSkeleton,
+  useConfirm,
+} from "@/components/ui";
 import { motion } from "framer-motion";
 import { CreateExamSessionDialog } from "@/components/shared/CreateExamSessionDialog";
 
@@ -76,82 +82,19 @@ export default function ExamSessionsPage() {
 
 
   return (
-    <div style={{ padding: "40px 24px", maxWidth: "1200px", margin: "0 auto" }}>
-      {/* Page Header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          marginBottom: "32px",
-          flexWrap: "wrap",
-          gap: "16px",
-        }}
-      >
-        <div>
-          <p
-            style={{
-              fontFamily: "Inter, Arial, sans-serif",
-              fontSize: "0.875rem",
-              fontWeight: 600,
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-              color: "#717171",
-              marginBottom: "8px",
-            }}
-          >
-            02 / Exam Sessions
-          </p>
-          <h1
-            style={{
-              fontFamily: "Inter, Arial, sans-serif",
-              fontSize: "2.5rem",
-              fontWeight: 500,
-              lineHeight: 1.1,
-              color: "#222222",
-              margin: 0,
-            }}
-          >
-            Exam Sessions
-          </h1>
-        </div>
-        <motion.button
-          onClick={() => setIsCreateOpen(true)}
-          whileHover={{ y: -1, scale: 1.01, backgroundColor: "#ea580c" }}
-          whileTap={{ scale: 0.97 }}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            padding: "12px 20px",
-            fontFamily: "Inter, Arial, sans-serif",
-            fontSize: "1rem",
-            fontWeight: 600,
-            color: "#ffffff",
-            backgroundColor: "#f97316",
-            border: "1px solid #f97316",
-            borderRadius: "12px",
-            textDecoration: "none",
-            transition: "border-color 0.15s ease",
-            cursor: "pointer",
-          }}
-        >
+    <PageShell
+      eyebrow="PE Exam Grading / Sessions"
+      title="Exam Sessions"
+      description="Create PE sessions, group assignments, and open the grading workflow."
+      actions={
+        <Button type="button" onClick={() => setIsCreateOpen(true)}>
           + New Exam Session
-        </motion.button>
-      </div>
+        </Button>
+      }
+    >
 
       {error && (
-        <div
-          style={{
-            padding: "16px",
-            backgroundColor: "#fef2f2",
-            border: "1px solid #fecaca",
-            borderRadius: "12px",
-            color: "#dc2626",
-            marginBottom: "24px",
-          }}
-        >
-          {error}
-        </div>
+        <PageError>{error}</PageError>
       )}
 
       {loading ? (
@@ -161,25 +104,9 @@ export default function ExamSessionsPage() {
           title="No exam sessions yet"
           description="Create your first exam session to start organizing assignments and grading."
           action={
-            <button
-              onClick={() => setIsCreateOpen(true)}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                padding: "10px 20px",
-                fontFamily: "Inter, Arial, sans-serif",
-                fontSize: "1rem",
-                fontWeight: 600,
-                color: "#ffffff",
-                backgroundColor: "#f97316",
-                border: "1px solid #f97316",
-                borderRadius: "12px",
-                textDecoration: "none",
-                cursor: "pointer",
-              }}
-            >
+            <Button type="button" onClick={() => setIsCreateOpen(true)}>
               + New Exam Session
-            </button>
+            </Button>
           }
         />
       ) : (
@@ -315,6 +242,6 @@ export default function ExamSessionsPage() {
         onOpenChange={setIsCreateOpen}
         onSuccess={loadSessions}
       />
-    </div>
+    </PageShell>
   );
 }

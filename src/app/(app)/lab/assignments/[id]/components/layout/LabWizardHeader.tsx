@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
 import { useLabWizard } from "../../context";
-import { LabWorkflowStatusBadge } from "./LabWorkflowStatusBadge";
+import { LabReadinessNudge } from "./LabReadinessChecklist";
 
 export function LabWizardHeader() {
   const { assignment, currentStep } = useLabWizard();
@@ -50,21 +50,21 @@ export function LabWizardHeader() {
 
       {/* Tiêu đề & mô tả động của Step hiện tại hiển thị cực kỳ sang trọng */}
       <div className="hidden md:flex flex-col gap-1 justify-center">
-        <h1 className="m-0 text-base font-extrabold text-[#222222] tracking-tight leading-none">
-          {stepTitle}
-        </h1>
-        <p className="m-0 text-[11px] text-[#717171] font-medium leading-none">
+        <div className="flex min-w-0 items-center gap-2">
+          <h1 className="m-0 text-base font-extrabold text-[#222222] tracking-tight leading-none">
+            {stepTitle}
+          </h1>
+          <span className="max-w-[260px] truncate text-[11px] font-semibold text-[#ea580c]">
+            {assignment.title}
+          </span>
+        </div>
+        <p className="m-0 max-w-[520px] truncate text-[11px] text-[#717171] font-medium leading-none">
           {stepDesc}
         </p>
       </div>
 
       <div className="flex items-center gap-3 md:gap-4">
-        <LabWorkflowStatusBadge />
-        {/* Badge ngữ cảnh hiển thị mã/tên bài tập */}
-        <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-[#fff7ed] border border-[#ffedd5] rounded-full text-xs font-semibold text-[#ea580c]">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#f97316] animate-pulse" />
-          <span>Configuring: {assignment.title}</span>
-        </div>
+        <LabReadinessNudge />
 
         <Link
           href="/lab/assignments"

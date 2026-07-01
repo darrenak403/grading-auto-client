@@ -7,7 +7,7 @@ import type { ExportJob } from "@/types";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Table } from "@/components/ui/Table";
-import { TableSkeleton } from "@/components/ui";
+import { Button, PageError, PageShell, TableSkeleton } from "@/components/ui";
 
 export default function LabExportsPage() {
   const [jobs, setJobs] = React.useState<ExportJob[]>([]);
@@ -60,7 +60,7 @@ export default function LabExportsPage() {
       );
       setJobs(loadedJobs);
     } catch (err) {
-      // ignore
+      setError(err instanceof Error ? err.message : "Failed to load lab export jobs");
     } finally {
       setLoading(false);
     }
@@ -91,57 +91,19 @@ export default function LabExportsPage() {
   };
 
   return (
-    <div style={{ padding: "40px 24px", maxWidth: "1200px", margin: "0 auto" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          marginBottom: "32px",
-        }}
-      >
-        <div>
-          <p
-            style={{
-              fontFamily: "Inter, Arial, sans-serif",
-              fontSize: "0.875rem",
-              fontWeight: 600,
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-              color: "#717171",
-              marginBottom: "8px",
-            }}
-          >
-            LAB GRADING / Exports
-          </p>
-          <h1
-            style={{
-              fontFamily: "Inter, Arial, sans-serif",
-              fontSize: "2.5rem",
-              fontWeight: 500,
-              lineHeight: 1.1,
-              color: "#222222",
-              margin: 0,
-            }}
-          >
-            Lab Export Jobs
-          </h1>
-        </div>
-      </div>
+    <PageShell
+      eyebrow="Lab Grading / Exports"
+      title="Lab Export Jobs"
+      description="Download Lab gradebook exports created from the assignment workflow."
+      actions={
+        <Button href="/lab/assignments" variant="outline">
+          Go to Lab Assignments
+        </Button>
+      }
+    >
 
       {error && (
-        <div
-          style={{
-            padding: "16px",
-            backgroundColor: "#fef2f2",
-            border: "1px solid #fecaca",
-            borderRadius: "5px",
-            color: "#dc2626",
-            marginBottom: "24px",
-          }}
-        >
-          {error}
-        </div>
+        <PageError>{error}</PageError>
       )}
 
       {loading ? (
@@ -150,6 +112,11 @@ export default function LabExportsPage() {
         <EmptyState
           title="No export jobs"
           description="Create exports from the lab assignment workflow pages."
+          action={
+            <Button href="/lab/assignments" variant="outline">
+              Open Lab Assignments
+            </Button>
+          }
         />
       ) : (
         <Table
@@ -231,6 +198,6 @@ export default function LabExportsPage() {
           data={jobs}
         />
       )}
-    </div>
+    </PageShell>
   );
 }

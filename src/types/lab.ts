@@ -198,3 +198,13 @@ export interface LabRegradeAllResult {
   queued: number;
 }
 
+export interface LabSyncSupabaseResult {
+  syncedCount: number;
+  message: string;
+}
+
+export interface LabSyncSupabaseRequest {
+  labId?: string;
+  className?: string;
+}
+

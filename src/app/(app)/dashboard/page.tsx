@@ -191,7 +191,7 @@ export default function DashboardPage() {
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-bold uppercase tracking-wider text-[#717171]">Lab Labs</dt>
+                <dt className="text-xs font-bold uppercase tracking-wider text-[#717171]">Lab Assignments</dt>
                 <dd className="mt-2 text-3xl font-extrabold text-[#222222] font-mono">
                   {stats?.totalLabAssignments ?? 0}
                 </dd>

@@ -7,6 +7,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Table } from "@/components/ui/Table";
 import {
   TableSkeleton,
+  PageError,
+  PageShell,
   useConfirm,
   Button,
   Input,
@@ -110,23 +112,19 @@ export default function LabSemestersPage() {
   };
 
   return (
-    <div className="mx-auto max-w-[1200px] px-6 py-10">
-      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-[#717171]">
-            Lab / Semesters
-          </p>
-          <h1 className="m-0 text-4xl font-medium text-[#222222]">Semesters</h1>
-        </div>
+    <PageShell
+      eyebrow="Lab Grading / Semesters"
+      title="Semesters"
+      description="Organize lab assignments by semester and keep course periods easy to scan."
+      actions={
         <Button type="button" onClick={openCreate}>
           + Add Semester
         </Button>
-      </div>
+      }
+    >
 
       {error && (
-        <div className="mb-6 rounded-xl border border-[#fecaca] bg-[#fef2f2] px-4 py-3 text-[#dc2626]">
-          {error}
-        </div>
+        <PageError>{error}</PageError>
       )}
 
       {loading ? (
@@ -228,6 +226,6 @@ export default function LabSemestersPage() {
           />
         </div>
       </Modal>
-    </div>
+    </PageShell>
   );
 }

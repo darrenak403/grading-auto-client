@@ -8,13 +8,14 @@ import { api } from "@/lib";
 import type {
   LabAssignmentDto,
   LabAssignmentFormValues,
-  LabAssignmentStatus,
   SemesterDto,
 } from "@/types";
 import { EmptyState } from "@/components/ui/EmptyState";
 import {
   useConfirm,
   Button,
+  PageError,
+  PageShell,
   Input,
   Textarea,
   FormSelect,
@@ -23,20 +24,6 @@ import {
 } from "@/components/ui";
 
 const MotionLink = motion(Link);
-
-function statusBadge(status: LabAssignmentStatus) {
-  return (
-    <span
-      className={
-        status === "Active"
-          ? "rounded-full bg-[#ecfdf5] px-2.5 py-0.5 text-xs font-semibold text-[#047857]"
-          : "rounded-full bg-[#f4f4f5] px-2.5 py-0.5 text-xs font-semibold text-[#717171]"
-      }
-    >
-      {status}
-    </span>
-  );
-}
 
 function CardSkeleton() {
   return (
@@ -144,20 +131,16 @@ export default function LabAssignmentsPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-[1200px] px-6 py-10">
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-[#717171]">
-            Lab / Assignments
-          </p>
-          <h1 className="m-0 text-4xl font-medium text-[#222222]">
-            Lab Assignments
-          </h1>
-        </div>
+    <PageShell
+      eyebrow="Lab Grading / Assignments"
+      title="Lab Assignments"
+      description="Create, filter, and manage lab grading workflows."
+      actions={
         <Button type="button" onClick={() => setDialogOpen(true)}>
           + New Lab Assignment
         </Button>
-      </div>
+      }
+    >
 
       <div className="mb-6 flex flex-wrap gap-3">
         <FormSelect
@@ -177,9 +160,7 @@ export default function LabAssignmentsPage() {
       </div>
 
       {error && (
-        <div className="mb-6 rounded-xl border border-[#fecaca] bg-[#fef2f2] px-4 py-3 text-[#dc2626]">
-          {error}
-        </div>
+        <PageError>{error}</PageError>
       )}
 
       {loading ? (
@@ -222,7 +203,7 @@ export default function LabAssignmentsPage() {
                 <button
                   type="button"
                   onClick={() => handleDelete(a.id)}
-                  className="cursor-pointer border-none bg-transparent text-xs font-bold text-[#dc2626] hover:underline"
+                  className="cursor-pointer rounded-lg border border-transparent bg-transparent px-2 py-1 text-xs font-semibold text-[#717171] transition-colors hover:border-[#fecaca] hover:bg-[#fef2f2] hover:text-[#dc2626]"
                 >
                   Delete
                 </button>
@@ -322,6 +303,6 @@ export default function LabAssignmentsPage() {
           />
         </div>
       </Modal>
-    </div>
+    </PageShell>
   );
 }

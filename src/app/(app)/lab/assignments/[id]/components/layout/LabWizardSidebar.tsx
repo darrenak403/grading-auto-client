@@ -2,9 +2,17 @@ import { Check, GraduationCap } from "lucide-react";
 import { useLabWizard } from "../../context";
 import { LabWorkflowStatusBadge } from "./LabWorkflowStatusBadge";
 import { Badge } from "@/components/ui";
+import { useLabReadiness, type ReadinessState } from "./LabReadinessChecklist";
+
+const stepStateStyle: Record<ReadinessState, string> = {
+  ready: "bg-[#16a34a]",
+  warning: "bg-[#f97316]",
+  blocked: "bg-[#dc2626]",
+};
 
 export function LabWizardSidebar() {
   const { currentStep, setCurrentStep, setDirection, assignment } = useLabWizard();
+  const { items: readinessItems } = useLabReadiness();
 
   const steps = [
     { id: 1, label: "Lab Setup", desc: "Configure title and semester", done: !!assignment },
@@ -25,12 +33,12 @@ export function LabWizardSidebar() {
         </span>
       </div>
 
-      <div className="px-8 pt-4 pb-2 shrink-0">
+      <div className="px-8 pt-4 pb-3 shrink-0">
         <LabWorkflowStatusBadge className="inline-flex" />
       </div>
 
       {/* Stepper dọc tinh tế */}
-      <div className="flex-1 flex flex-col justify-center px-8 overflow-y-auto">
+      <div className="flex-1 flex flex-col justify-center px-8 overflow-y-auto py-4">
         <div className="flex flex-col gap-14 relative">
           {/* Đường kẻ nối dọc các chấm tròn - CĂN GIỮA HOÀN HẢO */}
           <div className="absolute left-[15px] top-4 bottom-4 w-0.5 bg-[#ebebeb] z-0" />
@@ -39,6 +47,10 @@ export function LabWizardSidebar() {
             const stepNum = step.id;
             const isActive = currentStep === stepNum;
             const isCompleted = currentStep > stepNum || step.done;
+            const readinessForStep = readinessItems.find(
+              (item) => item.step === stepNum && item.state !== "ready"
+            );
+            const readinessState = readinessForStep?.state ?? (isCompleted ? "ready" : undefined);
 
             return (
               <div
@@ -89,6 +101,13 @@ export function LabWizardSidebar() {
                     }`}
                   >
                     <span>{step.label}</span>
+                    {readinessState && (
+                      <span
+                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${stepStateStyle[readinessState]}`}
+                        title={readinessForStep?.detail ?? "Ready"}
+                        aria-label={readinessForStep?.detail ?? "Ready"}
+                      />
+                    )}
                     {stepNum === 2 && assignment && assignment.testCaseCount > 0 && (
                       <Badge variant="default" className="!rounded-full px-1.5 py-0.5 text-[9px] font-bold shrink-0">
                         {assignment.testCaseCount}

@@ -5,6 +5,7 @@ import { api } from "@/lib";
 import type {
   LabAssignmentRosterItemDto,
   LabSubmissionResultDto,
+  LabSyncSupabaseRequest,
   LabTestCaseDto,
 } from "@/types";
 import {
@@ -15,7 +16,7 @@ import {
 import { useToast, Button, Input, Textarea, Modal, ModalActions, Skeleton, TableSkeleton, Badge } from "@/components/ui";
 import { useLabGradingProgress } from "../context";
 import { RosterScoreCell } from "./GradingPlaceholderProgress";
-import { Search, X } from "lucide-react";
+import { Search, X, RefreshCw } from "lucide-react";
 
 
 interface ResultsTabProps {
@@ -49,6 +50,10 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
   const [adjustScore, setAdjustScore] = React.useState("");
   const [adjustReason, setAdjustReason] = React.useState("");
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [syncing, setSyncing] = React.useState(false);
+  const [syncDialogOpen, setSyncDialogOpen] = React.useState(false);
+  const [syncLabId, setSyncLabId] = React.useState("");
+  const [syncClassName, setSyncClassName] = React.useState("");
 
   const filteredRoster = React.useMemo(() => {
     return roster.filter((row) =>
@@ -208,6 +213,35 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
     }
   };
 
+  const handleSyncSupabase = async () => {
+    const labId = syncLabId.trim();
+    const className = syncClassName.trim();
+    const payload: LabSyncSupabaseRequest | undefined =
+      labId || className
+        ? {
+            ...(labId ? { labId } : {}),
+            ...(className ? { className } : {}),
+          }
+        : undefined;
+
+    try {
+      setSyncing(true);
+      const res = await api.syncLabAssignmentSupabase(assignmentId, payload);
+      if (res.status) {
+        const successMsg =
+          res.data?.message || res.message || "Successfully synced to Supabase.";
+        toast(successMsg, "success");
+        setSyncDialogOpen(false);
+      } else {
+        toast(res.message || "Failed to sync to Supabase", "error");
+      }
+    } catch (error) {
+      toast(error instanceof Error ? error.message : "Error syncing to Supabase", "error");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   React.useEffect(() => {
     return () => {
       if (pollRef.current) {
@@ -227,16 +261,28 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
               {searchTerm.trim() ? `${filteredRoster.length}/${roster.length}` : roster.length}
             </Badge>
           )}
-          <Button 
-            type="button" 
-            size="sm" 
-            variant="outline"
-            className="ml-auto" 
-            onClick={handleExport}
-            disabled={exporting || loadingList || roster.length === 0}
-          >
-            {exporting ? "Exporting..." : "Export Excel"}
-          </Button>
+          <div className="ml-auto flex gap-1.5">
+            <Button 
+              type="button" 
+              size="sm" 
+              variant="outline"
+              onClick={handleExport}
+              disabled={exporting || syncing || loadingList || roster.length === 0}
+            >
+              {exporting ? "Exporting..." : "Export Excel"}
+            </Button>
+            <Button 
+              type="button" 
+              size="sm" 
+              variant="outline"
+              onClick={() => setSyncDialogOpen(true)}
+              disabled={exporting || syncing || loadingList || roster.length === 0}
+              className="flex items-center gap-1"
+            >
+              <RefreshCw size={14} className={syncing ? "animate-spin" : ""} />
+              {syncing ? "Syncing..." : "Sync Supabase"}
+            </Button>
+          </div>
         </div>
 
         {/* Thanh tìm kiếm đẹp mắt */}
@@ -466,6 +512,44 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
           </>
         )}
       </div>
+
+      <Modal
+        open={syncDialogOpen}
+        onClose={() => {
+          if (!syncing) setSyncDialogOpen(false);
+        }}
+        title="Sync Supabase"
+        description="Optionally override labId and className before syncing."
+        maxWidth={480}
+        footer={
+          <ModalActions
+            onCancel={() => {
+              if (!syncing) setSyncDialogOpen(false);
+            }}
+            onConfirm={handleSyncSupabase}
+            cancelLabel="Close"
+            confirmLabel="Start sync"
+            confirmLoading={syncing}
+          />
+        }
+      >
+        <div className="flex flex-col gap-4">
+          <Input
+            label="Lab ID"
+            value={syncLabId}
+            onChange={(e) => setSyncLabId(e.target.value)}
+            placeholder="Leave blank to use assignment title"
+            helperText="Maps to request body field labId."
+          />
+          <Input
+            label="Class name"
+            value={syncClassName}
+            onChange={(e) => setSyncClassName(e.target.value)}
+            placeholder="Leave blank to let backend resolve by student_id"
+            helperText="Maps to request body field className."
+          />
+        </div>
+      </Modal>
 
       <Modal
         open={adjustOpen}

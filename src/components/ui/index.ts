@@ -7,6 +7,7 @@ export { FormSelect, type FormSelectOption } from "./FormSelect";
 export { DatePicker } from "./DatePicker";
 export { Modal, ModalActions } from "./Modal";
 export { Badge } from "./Badge";
+export { PageShell, PageError, TableSurface } from "./PageShell";
 export { Skeleton, DashboardSkeleton, TableSkeleton } from "./Skeleton";
 export { ConfirmProvider, useConfirm } from "./ConfirmDialog";
 export { ToastProvider, useToast } from "./Toast";
