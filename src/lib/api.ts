@@ -39,8 +39,13 @@ import type {
   LabRegradeAllResult,
   LabAssignmentRosterItemDto,
   LabGradingProgressDto,
+  LabSyncSupabaseGradeRequest,
+  LabSyncSupabaseGradeResult,
+  LabSyncSupabaseGradesRequest,
+  LabSyncSupabaseGradesResult,
   LabSyncSupabaseRequest,
   LabSyncSupabaseResult,
+  LabSupabaseDropdownOptions,
 } from "@/types";
 
 class ApiClient {
@@ -629,6 +634,37 @@ class ApiClient {
     return this.post<LabSyncSupabaseResult>(
       `/lab-assignments/${id}/sync-supabase`,
       body
+    );
+  }
+
+  async syncLabSupabaseGrade(
+    body: LabSyncSupabaseGradeRequest
+  ): Promise<ApiResponse<LabSyncSupabaseGradeResult>> {
+    return this.post<LabSyncSupabaseGradeResult>(
+      "/lab-assignments/sync-supabase-grade",
+      body
+    );
+  }
+
+  async syncLabSupabaseGrades(
+    body: LabSyncSupabaseGradesRequest
+  ): Promise<ApiResponse<LabSyncSupabaseGradesResult>> {
+    return this.post<LabSyncSupabaseGradesResult>(
+      "/lab-assignments/sync-supabase-grades",
+      body
+    );
+  }
+
+  async getLabSupabaseDropdownOptions(params?: {
+    termId?: string;
+    className?: string;
+  }): Promise<ApiResponse<LabSupabaseDropdownOptions>> {
+    const search = new URLSearchParams();
+    if (params?.termId) search.set("termId", params.termId);
+    if (params?.className) search.set("className", params.className);
+    const query = search.size ? `?${search.toString()}` : "";
+    return this.get<LabSupabaseDropdownOptions>(
+      `/lab-assignments/supabase-dropdown-options${query}`
     );
   }
 

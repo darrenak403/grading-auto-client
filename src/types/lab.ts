@@ -206,5 +206,87 @@ export interface LabSyncSupabaseResult {
 export interface LabSyncSupabaseRequest {
   labId?: string;
   className?: string;
+  termId?: string;
+}
+
+export interface LabSyncSupabaseGradeRequest {
+  studentCode: string;
+  className: string;
+  labCode: string;
+  termId: string;
+  score: number;
+  details: unknown;
+  sourceUrl?: string | null;
+}
+
+export interface LabSyncSupabaseGradeResult {
+  classStudentId: string;
+  classLabId: string;
+  itemType: "original" | "late" | "resubmit";
+  fulfillsRequestId: string | null;
+}
+
+export interface LabSyncSupabaseGradesSubmission {
+  studentCode: string;
+  score: number;
+  details: unknown;
+  sourceUrl?: string | null;
+}
+
+export interface LabSyncSupabaseGradesRequest {
+  termId?: string;
+  className: string;
+  labCode: string;
+  submissions: LabSyncSupabaseGradesSubmission[];
+}
+
+export interface LabSyncSupabaseGradesSyncedItem {
+  studentCode: string;
+  classStudentId: string;
+  classLabId: string;
+  itemType: "original" | "late" | "resubmit";
+  fulfillsRequestId: string | null;
+}
+
+export interface LabSyncSupabaseGradesFailedItem {
+  studentCode: string;
+  message: string;
+}
+
+export interface LabSyncSupabaseGradesResult {
+  total: number;
+  syncedCount: number;
+  failedCount: number;
+  synced: LabSyncSupabaseGradesSyncedItem[];
+  failed: LabSyncSupabaseGradesFailedItem[];
+}
+
+export interface LabSupabaseTermOption {
+  id: string;
+  code: string | null;
+  name: string | null;
+}
+
+export interface LabSupabaseClassOption {
+  name: string;
+  termId: string | null;
+  termCode: string | null;
+  termName: string | null;
+}
+
+export interface LabSupabaseLabOption {
+  code: string;
+  title: string | null;
+  className: string | null;
+  termId: string | null;
+  termCode: string | null;
+  termName: string | null;
+  deadline: string | null;
+}
+
+export interface LabSupabaseDropdownOptions {
+  terms: LabSupabaseTermOption[];
+  classes: LabSupabaseClassOption[];
+  labs: LabSupabaseLabOption[];
 }
 

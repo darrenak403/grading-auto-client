@@ -3,20 +3,21 @@
 import * as React from "react";
 import { api } from "@/lib";
 import type {
+  ApiResponse,
   LabAssignmentRosterItemDto,
   LabSubmissionResultDto,
-  LabSyncSupabaseRequest,
   LabTestCaseDto,
+  LabSyncSupabaseGradesResult,
 } from "@/types";
 import {
   effectiveScore,
   isRosterScorePending,
   sumEffectiveScores,
 } from "@/lib/lab-utils";
-import { useToast, Button, Input, Textarea, Modal, ModalActions, Skeleton, TableSkeleton, Badge } from "@/components/ui";
+import { useToast, Button, FormSelect, Input, Textarea, Modal, ModalActions, Skeleton, TableSkeleton, Badge } from "@/components/ui";
 import { useLabGradingProgress } from "../context";
 import { RosterScoreCell } from "./GradingPlaceholderProgress";
-import { Search, X, RefreshCw } from "lucide-react";
+import { Search, X, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 
 
 interface ResultsTabProps {
@@ -32,6 +33,15 @@ const formatResponse = (resp: string | null) => {
     return resp;
   }
 };
+
+const formatApiError = (res: ApiResponse<unknown>, fallback: string) => {
+  const detail = res.errors?.find(Boolean);
+  return [res.message || fallback, detail, res.traceId ? `Trace: ${res.traceId}` : null]
+    .filter(Boolean)
+    .join(" ");
+};
+
+
 
 export function ResultsTab({ assignmentId }: ResultsTabProps) {
   const { toast } = useToast();
@@ -52,8 +62,20 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [syncing, setSyncing] = React.useState(false);
   const [syncDialogOpen, setSyncDialogOpen] = React.useState(false);
+  const [syncTermId, setSyncTermId] = React.useState("");
   const [syncLabId, setSyncLabId] = React.useState("");
   const [syncClassName, setSyncClassName] = React.useState("");
+  const [syncTerms, setSyncTerms] = React.useState<
+    { id: string; code: string | null; name: string | null }[]
+  >([]);
+  const [syncClasses, setSyncClasses] = React.useState<{ name: string }[]>([]);
+  const [syncLabs, setSyncLabs] = React.useState<
+    { code: string; title: string | null; className: string | null; deadline: string | null }[]
+  >([]);
+  const [syncOptionsLoading, setSyncOptionsLoading] = React.useState(false);
+  const [syncOptionsError, setSyncOptionsError] = React.useState<string | null>(null);
+  const syncOptionsRequestRef = React.useRef(0);
+  const [syncResult, setSyncResult] = React.useState<LabSyncSupabaseGradesResult | null>(null);
 
   const filteredRoster = React.useMemo(() => {
     return roster.filter((row) =>
@@ -161,6 +183,10 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
     ?.labTestCaseId;
 
   const runningId = progress?.runningSubmissionId;
+  const syncableRoster = React.useMemo(
+    () => roster.filter((row) => !isRosterScorePending(row)),
+    [roster]
+  );
 
   const [exporting, setExporting] = React.useState(false);
   const pollRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
@@ -213,25 +239,148 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
     }
   };
 
+  const loadSyncOptions = React.useCallback(
+    async ({
+      termId,
+      className,
+      replaceTerms = false,
+      replaceClasses = false,
+    }: {
+      termId?: string;
+      className?: string;
+      replaceTerms?: boolean;
+      replaceClasses?: boolean;
+    } = {}) => {
+      const requestId = syncOptionsRequestRef.current + 1;
+      syncOptionsRequestRef.current = requestId;
+      setSyncOptionsLoading(true);
+      setSyncOptionsError(null);
+
+      try {
+        const res = await api.getLabSupabaseDropdownOptions({
+          termId,
+          className,
+        });
+        if (syncOptionsRequestRef.current !== requestId) return;
+
+        if (res.status && res.data) {
+          if (replaceTerms) setSyncTerms(res.data.terms);
+          if (replaceClasses) setSyncClasses(res.data.classes);
+          setSyncLabs(res.data.labs);
+        } else {
+          if (replaceTerms) setSyncTerms([]);
+          if (replaceClasses) setSyncClasses([]);
+          setSyncLabs([]);
+          setSyncOptionsError(
+            formatApiError(
+              res,
+              "Failed to load Supabase term, class, and lab options."
+            )
+          );
+        }
+      } catch (error) {
+        if (syncOptionsRequestRef.current !== requestId) return;
+        if (replaceTerms) setSyncTerms([]);
+        if (replaceClasses) setSyncClasses([]);
+        setSyncLabs([]);
+        setSyncOptionsError(
+          error instanceof Error
+            ? error.message
+            : "Error loading Supabase term, class, and lab options."
+        );
+      } finally {
+        if (syncOptionsRequestRef.current === requestId) {
+          setSyncOptionsLoading(false);
+        }
+      }
+    },
+    []
+  );
+
+  React.useEffect(() => {
+    if (!syncDialogOpen) return;
+    void loadSyncOptions({ replaceTerms: true, replaceClasses: true });
+  }, [syncDialogOpen, loadSyncOptions]);
+
+  const handleSyncTermChange = (value: string) => {
+    setSyncTermId(value);
+    setSyncClassName("");
+    setSyncLabId("");
+    setSyncClasses([]);
+    setSyncLabs([]);
+    if (value) void loadSyncOptions({ termId: value, replaceClasses: true });
+  };
+
+  const handleSyncClassChange = (value: string) => {
+    setSyncClassName(value);
+    setSyncLabId("");
+    setSyncLabs([]);
+    if (syncTermId && value) {
+      void loadSyncOptions({ termId: syncTermId, className: value });
+    }
+  };
+
   const handleSyncSupabase = async () => {
+    const termId = syncTermId.trim();
     const labId = syncLabId.trim();
     const className = syncClassName.trim();
-    const payload: LabSyncSupabaseRequest | undefined =
-      labId || className
-        ? {
-            ...(labId ? { labId } : {}),
-            ...(className ? { className } : {}),
-          }
-        : undefined;
+    if (!termId || !className || !labId) {
+      toast("Select a Supabase term, class, and lab before syncing.", "error");
+      return;
+    }
+    if (syncableRoster.length === 0) {
+      toast("No completed submissions are ready to sync.", "error");
+      return;
+    }
 
     try {
       setSyncing(true);
-      const res = await api.syncLabAssignmentSupabase(assignmentId, payload);
+      const detailResponses = await Promise.all(
+        syncableRoster.map(async (row) => ({
+          rosterItem: row,
+          response: await api.getLabSubmissionResults(row.submissionId),
+        }))
+      );
+      const failedLoads = detailResponses.filter(
+        (item) => !item.response.status || !item.response.data
+      );
+      if (failedLoads.length > 0) {
+        toast(`Could not load ${failedLoads.length} submission result(s).`, "error");
+        return;
+      }
+
+      const submissions = detailResponses
+        .map((item) => item.response.data!)
+        .map((result) => ({
+          studentCode: result.studentCode.trim().toUpperCase(),
+          score: sumEffectiveScores(result.results),
+          details: result,
+        }));
+
+      const res = await api.syncLabSupabaseGrades({
+        termId,
+        className,
+        labCode: labId,
+        submissions,
+      });
       if (res.status) {
-        const successMsg =
-          res.data?.message || res.message || "Successfully synced to Supabase.";
-        toast(successMsg, "success");
-        setSyncDialogOpen(false);
+        const syncedCount = res.data?.syncedCount ?? submissions.length;
+        const failedCount = res.data?.failedCount ?? 0;
+        setSyncResult(
+          res.data ?? {
+            total: submissions.length,
+            syncedCount,
+            failedCount,
+            synced: [],
+            failed: [],
+          }
+        );
+        toast(
+          failedCount > 0
+            ? `Synced ${syncedCount}; ${failedCount} failed.`
+            : `Successfully synced ${syncedCount} submissions to Supabase.`,
+          (failedCount > 0 ? "error" : "success") as "error" | "success"
+        );
       } else {
         toast(res.message || "Failed to sync to Supabase", "error");
       }
@@ -244,11 +393,60 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
 
   React.useEffect(() => {
     return () => {
+      syncOptionsRequestRef.current += 1;
       if (pollRef.current) {
         clearInterval(pollRef.current);
       }
     };
   }, []);
+
+  const syncTermOptions = React.useMemo(
+    () =>
+      syncTerms.map((item) => ({
+        value: item.id,
+        label: item.code
+          ? item.name
+            ? `${item.code} · ${item.name}`
+            : item.code
+          : item.name || item.id,
+      })),
+    [syncTerms]
+  );
+
+  const syncClassOptions = React.useMemo(
+    () =>
+      Array.from(new Set(syncClasses.map((item) => item.name)))
+        .filter(Boolean)
+        .map((name) => ({ value: name, label: name })),
+    [syncClasses]
+  );
+
+  const syncLabOptions = React.useMemo(
+    () => {
+      const uniqueLabs = new Map<string, (typeof syncLabs)[number]>();
+      for (const item of syncLabs) {
+        if (!item.code || uniqueLabs.has(item.code)) continue;
+        uniqueLabs.set(item.code, item);
+      }
+
+      return Array.from(uniqueLabs.values()).map((item) => ({
+        value: item.code,
+        label: item.deadline
+          ? `${item.code} · due ${new Date(item.deadline).toLocaleDateString()}`
+          : item.code,
+      }));
+    },
+    [syncLabs]
+  );
+
+  const syncConfirmDisabled =
+    syncing ||
+    syncOptionsLoading ||
+    syncOptionsError != null ||
+    !syncTermId.trim() ||
+    !syncClassName.trim() ||
+    !syncLabId.trim() ||
+    syncableRoster.length === 0;
 
   return (
     <div className="flex flex-col md:flex-row gap-6 h-full w-full overflow-hidden flex-1">
@@ -516,39 +714,174 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
       <Modal
         open={syncDialogOpen}
         onClose={() => {
-          if (!syncing) setSyncDialogOpen(false);
+          if (!syncing) {
+            setSyncDialogOpen(false);
+            setSyncResult(null);
+          }
         }}
-        title="Sync Supabase"
-        description="Optionally override labId and className before syncing."
+        title={syncResult ? "Sync Results" : "Sync Supabase"}
+        description={
+          syncResult
+            ? "Summary of the Supabase sync operation."
+            : "Choose the target term, class, and lab before syncing completed submissions."
+        }
         maxWidth={480}
         footer={
-          <ModalActions
-            onCancel={() => {
-              if (!syncing) setSyncDialogOpen(false);
-            }}
-            onConfirm={handleSyncSupabase}
-            cancelLabel="Close"
-            confirmLabel="Start sync"
-            confirmLoading={syncing}
-          />
+          syncResult ? (
+            <Button
+              type="button"
+              variant="primary"
+              onClick={() => {
+                setSyncDialogOpen(false);
+                setSyncResult(null);
+              }}
+              className="w-full"
+            >
+              Close
+            </Button>
+          ) : (
+            <ModalActions
+              onCancel={() => {
+                if (!syncing) {
+                  setSyncDialogOpen(false);
+                  setSyncResult(null);
+                }
+              }}
+              onConfirm={handleSyncSupabase}
+              cancelLabel="Close"
+              confirmLabel="Start sync"
+              confirmDisabled={syncConfirmDisabled}
+              confirmLoading={syncing}
+            />
+          )
         }
       >
-        <div className="flex flex-col gap-4">
-          <Input
-            label="Lab ID"
-            value={syncLabId}
-            onChange={(e) => setSyncLabId(e.target.value)}
-            placeholder="Leave blank to use assignment title"
-            helperText="Maps to request body field labId."
-          />
-          <Input
-            label="Class name"
-            value={syncClassName}
-            onChange={(e) => setSyncClassName(e.target.value)}
-            placeholder="Leave blank to let backend resolve by student_id"
-            helperText="Maps to request body field className."
-          />
-        </div>
+        {syncResult ? (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3 rounded-xl border border-[#ebebeb] bg-[#fcfcfc] p-4">
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-[#222222]">Sync Summary</p>
+                <div className="mt-2 grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-lg bg-[#f4f4f5] p-2">
+                    <span className="block text-xs text-[#717171]">Total</span>
+                    <span className="text-base font-bold text-[#222222]">{syncResult.total}</span>
+                  </div>
+                  <div className="rounded-lg bg-[#ecfdf5] p-2">
+                    <span className="block text-xs text-[#047857]">Success</span>
+                    <span className="text-base font-bold text-[#047857]">{syncResult.syncedCount}</span>
+                  </div>
+                  <div className="rounded-lg bg-[#fef2f2] p-2">
+                    <span className="block text-xs text-[#dc2626]">Failed</span>
+                    <span className="text-base font-bold text-[#dc2626]">{syncResult.failedCount}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {syncResult.failedCount > 0 && (
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-1.5 text-sm font-semibold text-[#dc2626]">
+                  <AlertCircle size={16} />
+                  <span>Failed Submissions ({syncResult.failedCount})</span>
+                </div>
+                <div className="max-h-60 overflow-y-auto border border-[#fecaca] bg-[#fef2f2] rounded-xl p-3 flex flex-col gap-2.5">
+                  {syncResult.failed.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="text-xs text-[#991b1b] border-b border-[#fee2e2] last:border-0 pb-2 last:pb-0"
+                    >
+                      <strong className="block text-sm">{item.studentCode}</strong>
+                      <span className="block mt-1 leading-relaxed text-[#b91c1c] bg-white/50 rounded px-2 py-1 border border-[#fee2e2] font-mono">
+                        {item.message}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {syncResult.failedCount === 0 && (
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <CheckCircle2 size={40} className="text-[#16a34a] mb-2" />
+                <p className="text-sm font-semibold text-[#222222]">All Submissions Synced</p>
+                <p className="text-xs text-[#717171] mt-1">
+                  All {syncResult.syncedCount} completed submissions have been successfully uploaded to Supabase.
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            <FormSelect
+              label="Term"
+              value={syncTermId}
+              onValueChange={handleSyncTermChange}
+              options={syncTermOptions}
+              placeholder={syncOptionsLoading ? "Loading terms..." : "Select term"}
+              disabled={syncing || syncOptionsLoading || syncTermOptions.length === 0}
+            />
+            <FormSelect
+              label="Class"
+              value={syncClassName}
+              onValueChange={handleSyncClassChange}
+              options={syncClassOptions}
+              placeholder={
+                !syncTermId
+                  ? "Select term first"
+                  : syncOptionsLoading
+                    ? "Loading classes..."
+                    : "Select class"
+              }
+              disabled={
+                syncing ||
+                syncOptionsLoading ||
+                !syncTermId ||
+                syncClassOptions.length === 0
+              }
+            />
+            <FormSelect
+              label="Lab"
+              value={syncLabId}
+              onValueChange={setSyncLabId}
+              options={syncLabOptions}
+              placeholder={
+                !syncTermId
+                  ? "Select term first"
+                  : !syncClassName
+                  ? "Select class first"
+                  : syncOptionsLoading
+                    ? "Loading labs..."
+                    : "Select lab"
+              }
+              disabled={
+                syncing ||
+                syncOptionsLoading ||
+                !syncTermId ||
+                !syncClassName ||
+                syncLabOptions.length === 0
+              }
+            />
+            {syncOptionsError ? (
+              <p className="rounded-lg border border-[#fecaca] bg-[#fef2f2] px-3 py-2 text-sm font-medium text-[#b91c1c]">
+                {syncOptionsError}
+              </p>
+            ) : syncTermId && !syncOptionsLoading && syncClassOptions.length === 0 ? (
+              <p className="rounded-lg border border-[#fed7aa] bg-[#fff7ed] px-3 py-2 text-sm font-medium text-[#9a3412]">
+                No classes are assigned to the selected term.
+              </p>
+            ) : syncClassName && !syncOptionsLoading && syncLabOptions.length === 0 ? (
+              <p className="rounded-lg border border-[#fed7aa] bg-[#fff7ed] px-3 py-2 text-sm font-medium text-[#9a3412]">
+                No labs are assigned to {syncClassName}.
+              </p>
+            ) : (
+              <p className="text-sm text-[#717171]">
+                Sync will send {syncableRoster.length} completed submission
+                {syncableRoster.length === 1 ? "" : "s"} for the selected term,
+                class, and lab.
+              </p>
+            )}
+          </div>
+        )}
       </Modal>
 
       <Modal
