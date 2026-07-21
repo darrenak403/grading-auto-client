@@ -62,7 +62,10 @@ export function Step1Setup() {
   if (!assignment) return null;
 
   return (
-    <div className="w-full rounded-2xl border border-[#ebebeb] bg-white p-8">
+    <div
+      className="w-full rounded-2xl border border-[#ebebeb] bg-white p-8"
+      data-tour="lab-setup-form"
+    >
       {error && (
         <p className="mb-6 rounded-lg bg-[#fef2f2] px-3 py-2 text-sm text-[#dc2626]">
           {error}

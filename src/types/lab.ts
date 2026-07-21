@@ -207,6 +207,7 @@ export interface LabSyncSupabaseRequest {
   labId?: string;
   className?: string;
   termId?: string;
+  gradingSessionId?: string;
 }
 
 export interface LabSyncSupabaseGradeRequest {
@@ -217,13 +218,18 @@ export interface LabSyncSupabaseGradeRequest {
   score: number;
   details: unknown;
   sourceUrl?: string | null;
+  gradingSessionId?: string;
 }
 
 export interface LabSyncSupabaseGradeResult {
   classStudentId: string;
-  classLabId: string;
-  itemType: "original" | "late" | "resubmit";
-  fulfillsRequestId: string | null;
+  gradingSessionId?: string;
+  /** @deprecated Kept while the API migrates to gradingSessionId. */
+  classLabId?: string;
+  /** @deprecated Session submissions are always original. */
+  itemType?: "original" | "late" | "resubmit";
+  /** @deprecated The grading-session flow does not use resubmission requests. */
+  fulfillsRequestId?: string | null;
 }
 
 export interface LabSyncSupabaseGradesSubmission {
@@ -237,20 +243,27 @@ export interface LabSyncSupabaseGradesRequest {
   termId?: string;
   className: string;
   labCode: string;
+  gradingSessionId?: string;
   submissions: LabSyncSupabaseGradesSubmission[];
 }
 
 export interface LabSyncSupabaseGradesSyncedItem {
   studentCode: string;
   classStudentId: string;
-  classLabId: string;
-  itemType: "original" | "late" | "resubmit";
-  fulfillsRequestId: string | null;
+  gradingSessionId?: string;
+  /** @deprecated Kept while the API migrates to gradingSessionId. */
+  classLabId?: string;
+  /** @deprecated Session submissions are always original. */
+  itemType?: "original" | "late" | "resubmit";
+  /** @deprecated The grading-session flow does not use resubmission requests. */
+  fulfillsRequestId?: string | null;
 }
 
 export interface LabSyncSupabaseGradesFailedItem {
   studentCode: string;
-  message: string;
+  error?: string;
+  /** @deprecated Legacy clients used message instead of the API's error field. */
+  message?: string;
 }
 
 export interface LabSyncSupabaseGradesResult {
@@ -284,9 +297,21 @@ export interface LabSupabaseLabOption {
   deadline: string | null;
 }
 
+export interface LabSupabaseGradingSessionOption {
+  id: string;
+  name: string;
+  status: "open" | "closed";
+  deadline: string | null;
+  className: string;
+  labCode: string;
+  termId: string;
+}
+
 export interface LabSupabaseDropdownOptions {
   terms: LabSupabaseTermOption[];
   classes: LabSupabaseClassOption[];
   labs: LabSupabaseLabOption[];
+  /** Missing when connected to the legacy class_labs API. */
+  sessions?: LabSupabaseGradingSessionOption[];
 }
 

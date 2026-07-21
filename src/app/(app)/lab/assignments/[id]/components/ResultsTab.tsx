@@ -6,6 +6,7 @@ import type {
   ApiResponse,
   LabAssignmentRosterItemDto,
   LabSubmissionResultDto,
+  LabSupabaseGradingSessionOption,
   LabTestCaseDto,
   LabSyncSupabaseGradesResult,
 } from "@/types";
@@ -65,6 +66,7 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
   const [syncTermId, setSyncTermId] = React.useState("");
   const [syncLabId, setSyncLabId] = React.useState("");
   const [syncClassName, setSyncClassName] = React.useState("");
+  const [syncGradingSessionId, setSyncGradingSessionId] = React.useState("");
   const [syncTerms, setSyncTerms] = React.useState<
     { id: string; code: string | null; name: string | null }[]
   >([]);
@@ -72,6 +74,11 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
   const [syncLabs, setSyncLabs] = React.useState<
     { code: string; title: string | null; className: string | null; deadline: string | null }[]
   >([]);
+  const [syncSessions, setSyncSessions] = React.useState<
+    LabSupabaseGradingSessionOption[]
+  >([]);
+  const [syncSessionsSupported, setSyncSessionsSupported] =
+    React.useState(false);
   const [syncOptionsLoading, setSyncOptionsLoading] = React.useState(false);
   const [syncOptionsError, setSyncOptionsError] = React.useState<string | null>(null);
   const syncOptionsRequestRef = React.useRef(0);
@@ -243,11 +250,13 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
     async ({
       termId,
       className,
+      labCode,
       replaceTerms = false,
       replaceClasses = false,
     }: {
       termId?: string;
       className?: string;
+      labCode?: string;
       replaceTerms?: boolean;
       replaceClasses?: boolean;
     } = {}) => {
@@ -260,6 +269,7 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
         const res = await api.getLabSupabaseDropdownOptions({
           termId,
           className,
+          labCode,
         });
         if (syncOptionsRequestRef.current !== requestId) return;
 
@@ -267,10 +277,13 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
           if (replaceTerms) setSyncTerms(res.data.terms);
           if (replaceClasses) setSyncClasses(res.data.classes);
           setSyncLabs(res.data.labs);
+          setSyncSessions(res.data.sessions ?? []);
+          setSyncSessionsSupported(Array.isArray(res.data.sessions));
         } else {
           if (replaceTerms) setSyncTerms([]);
           if (replaceClasses) setSyncClasses([]);
           setSyncLabs([]);
+          setSyncSessions([]);
           setSyncOptionsError(
             formatApiError(
               res,
@@ -283,6 +296,7 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
         if (replaceTerms) setSyncTerms([]);
         if (replaceClasses) setSyncClasses([]);
         setSyncLabs([]);
+        setSyncSessions([]);
         setSyncOptionsError(
           error instanceof Error
             ? error.message
@@ -306,17 +320,33 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
     setSyncTermId(value);
     setSyncClassName("");
     setSyncLabId("");
+    setSyncGradingSessionId("");
     setSyncClasses([]);
     setSyncLabs([]);
+    setSyncSessions([]);
     if (value) void loadSyncOptions({ termId: value, replaceClasses: true });
   };
 
   const handleSyncClassChange = (value: string) => {
     setSyncClassName(value);
     setSyncLabId("");
+    setSyncGradingSessionId("");
     setSyncLabs([]);
+    setSyncSessions([]);
     if (syncTermId && value) {
       void loadSyncOptions({ termId: syncTermId, className: value });
+    }
+  };
+
+  const handleSyncLabChange = (value: string) => {
+    setSyncLabId(value);
+    setSyncGradingSessionId("");
+    if (syncTermId && syncClassName && value) {
+      void loadSyncOptions({
+        termId: syncTermId,
+        className: syncClassName,
+        labCode: value,
+      });
     }
   };
 
@@ -326,6 +356,10 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
     const className = syncClassName.trim();
     if (!termId || !className || !labId) {
       toast("Select a Supabase term, class, and lab before syncing.", "error");
+      return;
+    }
+    if (syncSessionsSupported && !syncGradingSessionId.trim()) {
+      toast("Select an open grading session before syncing.", "error");
       return;
     }
     if (syncableRoster.length === 0) {
@@ -361,6 +395,9 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
         termId,
         className,
         labCode: labId,
+        ...(syncGradingSessionId
+          ? { gradingSessionId: syncGradingSessionId }
+          : {}),
         submissions,
       });
       if (res.status) {
@@ -439,6 +476,44 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
     [syncLabs]
   );
 
+  const matchingSyncSessions = React.useMemo(() => {
+    const termId = syncTermId.trim().toLowerCase();
+    const className = syncClassName.trim().toLowerCase();
+    const labCode = syncLabId.trim().toLowerCase();
+
+    return syncSessions.filter(
+      (session) =>
+        session.status.toLowerCase() === "open" &&
+        session.termId.toLowerCase() === termId &&
+        session.className.toLowerCase() === className &&
+        session.labCode.toLowerCase() === labCode
+    );
+  }, [syncClassName, syncLabId, syncSessions, syncTermId]);
+
+  const syncSessionOptions = React.useMemo(
+    () =>
+      matchingSyncSessions.map((session) => ({
+        value: session.id,
+        label: session.deadline
+          ? `${session.name} · due ${new Date(session.deadline).toLocaleString()}`
+          : `${session.name} · no deadline`,
+      })),
+    [matchingSyncSessions]
+  );
+
+  React.useEffect(() => {
+    if (!syncSessionsSupported || !syncLabId) return;
+
+    setSyncGradingSessionId((current) => {
+      if (matchingSyncSessions.some((session) => session.id === current)) {
+        return current;
+      }
+      return matchingSyncSessions.length === 1
+        ? matchingSyncSessions[0].id
+        : "";
+    });
+  }, [matchingSyncSessions, syncLabId, syncSessionsSupported]);
+
   const syncConfirmDisabled =
     syncing ||
     syncOptionsLoading ||
@@ -446,12 +521,16 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
     !syncTermId.trim() ||
     !syncClassName.trim() ||
     !syncLabId.trim() ||
+    (syncSessionsSupported && !syncGradingSessionId.trim()) ||
     syncableRoster.length === 0;
 
   return (
     <div className="flex flex-col md:flex-row gap-6 h-full w-full overflow-hidden flex-1">
       {/* Cột 1: Submissions Sidebar - Ghim cố định & tự cuộn độc lập */}
-      <div className="w-full md:w-[260px] shrink-0 flex flex-col h-full border-b md:border-b-0 md:border-r border-[#ebebeb] pb-4 md:pb-0 md:pr-4 overflow-hidden">
+      <div
+        className="w-full md:w-[260px] shrink-0 flex flex-col h-full border-b md:border-b-0 md:border-r border-[#ebebeb] pb-4 md:pb-0 md:pr-4 overflow-hidden"
+        data-tour="lab-results"
+      >
         <div className="flex items-center gap-2 mb-3 shrink-0 flex-wrap">
           <h3 className="text-base font-semibold text-[#222222]">Submissions</h3>
           {!loadingList && (
@@ -476,6 +555,7 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
               onClick={() => setSyncDialogOpen(true)}
               disabled={exporting || syncing || loadingList || roster.length === 0}
               className="flex items-center gap-1"
+              data-tour="sync-supabase"
             >
               <RefreshCw size={14} className={syncing ? "animate-spin" : ""} />
               {syncing ? "Syncing..." : "Sync Supabase"}
@@ -723,7 +803,7 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
         description={
           syncResult
             ? "Summary of the Supabase sync operation."
-            : "Choose the target term, class, and lab before syncing completed submissions."
+            : "Choose the target term, class, lab, and grading session before syncing completed submissions."
         }
         maxWidth={480}
         footer={
@@ -792,7 +872,7 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
                     >
                       <strong className="block text-sm">{item.studentCode}</strong>
                       <span className="block mt-1 leading-relaxed text-[#b91c1c] bg-white/50 rounded px-2 py-1 border border-[#fee2e2] font-mono">
-                        {item.message}
+                        {item.error || item.message || "Unknown sync error"}
                       </span>
                     </div>
                   ))}
@@ -811,7 +891,7 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
             )}
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4" data-tour="sync-supabase-form">
             <FormSelect
               label="Term"
               value={syncTermId}
@@ -842,7 +922,7 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
             <FormSelect
               label="Lab"
               value={syncLabId}
-              onValueChange={setSyncLabId}
+              onValueChange={handleSyncLabChange}
               options={syncLabOptions}
               placeholder={
                 !syncTermId
@@ -861,6 +941,27 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
                 syncLabOptions.length === 0
               }
             />
+            {syncSessionsSupported && (
+              <FormSelect
+                label="Grading session"
+                value={syncGradingSessionId}
+                onValueChange={setSyncGradingSessionId}
+                options={syncSessionOptions}
+                placeholder={
+                  !syncLabId
+                    ? "Select lab first"
+                    : syncOptionsLoading
+                      ? "Loading grading sessions..."
+                      : "Select grading session"
+                }
+                disabled={
+                  syncing ||
+                  syncOptionsLoading ||
+                  !syncLabId ||
+                  syncSessionOptions.length === 0
+                }
+              />
+            )}
             {syncOptionsError ? (
               <p className="rounded-lg border border-[#fecaca] bg-[#fef2f2] px-3 py-2 text-sm font-medium text-[#b91c1c]">
                 {syncOptionsError}
@@ -873,11 +974,18 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
               <p className="rounded-lg border border-[#fed7aa] bg-[#fff7ed] px-3 py-2 text-sm font-medium text-[#9a3412]">
                 No labs are assigned to {syncClassName}.
               </p>
+            ) : syncSessionsSupported &&
+              syncLabId &&
+              !syncOptionsLoading &&
+              syncSessionOptions.length === 0 ? (
+              <p className="rounded-lg border border-[#fed7aa] bg-[#fff7ed] px-3 py-2 text-sm font-medium text-[#9a3412]">
+                No open grading session is available for {syncLabId} in {syncClassName}.
+              </p>
             ) : (
               <p className="text-sm text-[#717171]">
                 Sync will send {syncableRoster.length} completed submission
                 {syncableRoster.length === 1 ? "" : "s"} for the selected term,
-                class, and lab.
+                class, lab{syncSessionsSupported ? ", and grading session" : ""}.
               </p>
             )}
           </div>

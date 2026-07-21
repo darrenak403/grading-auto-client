@@ -154,7 +154,7 @@ export function TestCasesTab({ assignmentId }: TestCasesTabProps) {
           '"$1": $2'
         );
         parsed = JSON.parse(cleanedJson) as LabTestCaseFormValues[];
-      } catch (secondaryError) {
+      } catch {
         setImportError(primaryError instanceof Error ? primaryError.message : "Invalid JSON");
         return;
       }
@@ -192,7 +192,13 @@ export function TestCasesTab({ assignmentId }: TestCasesTabProps) {
           · Rejected {counts.rejected}
         </span>
         <div className="flex-1" />
-        <Button type="button" variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setImportOpen(true)}
+          data-tour="testcase-import"
+        >
           Import JSON
         </Button>
         <Button
@@ -200,6 +206,7 @@ export function TestCasesTab({ assignmentId }: TestCasesTabProps) {
           size="sm"
           onClick={handleApproveAll}
           disabled={counts.draft === 0}
+          data-tour="testcase-approve"
         >
           Approve All
         </Button>

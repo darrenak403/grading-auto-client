@@ -279,6 +279,7 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
           onClick={() => setUploadDialogOpen(true)}
           disabled={uploading}
           className="min-h-10"
+          data-tour="submission-upload"
         >
           {uploading ? "Uploading…" : "Upload ZIP/RAR"}
         </Button>
@@ -289,6 +290,7 @@ export function SubmissionsTab({ assignmentId }: SubmissionsTabProps) {
             onClick={handleGradeAll}
             disabled={uploading || isPolling || gradeBlockedReason != null}
             title={gradeBlockedReason ?? undefined}
+            data-tour="grade-all"
           >
             {isPolling ? "Grading…" : "Grade All"}
           </Button>

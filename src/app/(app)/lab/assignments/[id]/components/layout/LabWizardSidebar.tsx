@@ -22,7 +22,10 @@ export function LabWizardSidebar() {
   ];
 
   return (
-    <aside className="hidden md:flex flex-col w-[260px] bg-[#fcfcfc] border-r border-[#ebebeb] shrink-0 select-none h-full">
+    <aside
+      className="hidden md:flex flex-col w-[260px] bg-[#fcfcfc] border-r border-[#ebebeb] shrink-0 select-none h-full"
+      data-tour="lab-workflow-steps"
+    >
       {/* Logo ở góc trên cùng của Sidebar */}
       <div className="h-20 px-8 flex items-center gap-3 border-b border-[#ebebeb] shrink-0">
         <div className="w-9 h-9 rounded-full bg-[#f97316] flex items-center justify-center text-white shadow-sm shadow-[#f97316]/20">

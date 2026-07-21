@@ -2,6 +2,7 @@ import Link from "next/link";
 import { GraduationCap } from "lucide-react";
 import { useLabWizard } from "../../context";
 import { LabReadinessNudge } from "./LabReadinessChecklist";
+import { LabWorkflowTour } from "../LabWorkflowTour";
 
 export function LabWizardHeader() {
   const { assignment, currentStep } = useLabWizard();
@@ -65,6 +66,7 @@ export function LabWizardHeader() {
 
       <div className="flex items-center gap-3 md:gap-4">
         <LabReadinessNudge />
+        <LabWorkflowTour />
 
         <Link
           href="/lab/assignments"

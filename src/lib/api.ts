@@ -658,10 +658,12 @@ class ApiClient {
   async getLabSupabaseDropdownOptions(params?: {
     termId?: string;
     className?: string;
+    labCode?: string;
   }): Promise<ApiResponse<LabSupabaseDropdownOptions>> {
     const search = new URLSearchParams();
     if (params?.termId) search.set("termId", params.termId);
     if (params?.className) search.set("className", params.className);
+    if (params?.labCode) search.set("labCode", params.labCode);
     const query = search.size ? `?${search.toString()}` : "";
     return this.get<LabSupabaseDropdownOptions>(
       `/lab-assignments/supabase-dropdown-options${query}`

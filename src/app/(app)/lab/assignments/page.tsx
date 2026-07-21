@@ -136,7 +136,11 @@ export default function LabAssignmentsPage() {
       title="Lab Assignments"
       description="Create, filter, and manage lab grading workflows."
       actions={
-        <Button type="button" onClick={() => setDialogOpen(true)}>
+        <Button
+          type="button"
+          onClick={() => setDialogOpen(true)}
+          data-tour="create-lab-assignment"
+        >
           + New Lab Assignment
         </Button>
       }
@@ -276,7 +280,7 @@ export default function LabAssignmentsPage() {
             .
           </p>
         )}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4" data-tour="create-lab-form">
           <Input
             label="Title"
             value={form.title}

@@ -4,6 +4,7 @@
    ============================================ */
 
 @import "tailwindcss";
+@import "driver.js/dist/driver.css";
 
 /* ============================================
    CSS CUSTOM PROPERTIES (Design Tokens)
@@ -608,5 +609,86 @@ select:focus-visible {
   body {
     background-color: white;
     color: black;
+  }
+}
+
+/* ============================================
+   PRODUCT TOUR
+   ============================================ */
+.driver-popover.prn232-driver-popover {
+  max-width: 360px;
+  border: 1px solid var(--color-sand);
+  border-radius: var(--radius-standard);
+  padding: var(--space-20);
+  color: var(--color-text);
+  background: var(--color-cream);
+  box-shadow: 0 10px 30px rgba(34, 34, 34, 0.16);
+  font-family: var(--font-primary);
+}
+
+.prn232-driver-popover .driver-popover-title {
+  font-size: 1rem;
+  line-height: 1.4;
+  font-weight: 700;
+  color: var(--color-text);
+  text-wrap: balance;
+}
+
+.prn232-driver-popover .driver-popover-description {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  text-wrap: pretty;
+}
+
+.prn232-driver-popover .driver-popover-progress-text {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.prn232-driver-popover .driver-popover-footer-btn {
+  min-height: 36px;
+  border: 1px solid var(--color-sand);
+  border-radius: 10px;
+  padding: 6px 12px;
+  background: var(--color-cream);
+  color: var(--color-text);
+  font-family: var(--font-primary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-shadow: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.prn232-driver-popover .driver-popover-next-btn,
+.prn232-driver-popover .driver-popover-done-btn {
+  border-color: var(--color-orange);
+  background: var(--color-orange);
+  color: white;
+}
+
+.prn232-driver-popover .driver-popover-footer-btn:hover {
+  border-color: var(--color-mid-warm);
+  background: var(--color-light-sand);
+}
+
+.prn232-driver-popover .driver-popover-next-btn:hover,
+.prn232-driver-popover .driver-popover-done-btn:hover {
+  border-color: #ea580c;
+  background: #ea580c;
+  color: white;
+}
+
+.prn232-driver-popover .driver-popover-close-btn {
+  color: var(--color-text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .driver-overlay-animated,
+  .driver-popover,
+  .driver-active-element {
+    transition: none !important;
   }
 }

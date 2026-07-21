@@ -207,7 +207,10 @@ export function Sidebar() {
 
   return (
     <>
-      <header className="md:hidden sticky top-0 z-40 flex items-center justify-between w-full h-16 px-6 bg-white border-b border-[#ebebeb]">
+      <header
+        className="md:hidden sticky top-0 z-40 flex items-center justify-between w-full h-16 px-6 bg-white border-b border-[#ebebeb]"
+        data-tour="mobile-navigation"
+      >
         {logoSection}
         <button
           onClick={toggleSidebar}
@@ -264,7 +267,10 @@ export function Sidebar() {
         )}
       </AnimatePresence>
 
-      <aside className="hidden md:flex flex-col justify-between w-[260px] h-screen sticky top-0 bg-[#fcfcfc] border-r border-[#ebebeb] p-6 shrink-0">
+      <aside
+        className="hidden md:flex flex-col justify-between w-[260px] h-screen sticky top-0 bg-[#fcfcfc] border-r border-[#ebebeb] p-6 shrink-0"
+        data-tour="desktop-navigation"
+      >
         <div className="flex flex-col gap-10">
           <div className="py-2 px-1">{logoSection}</div>
           <nav className="flex flex-col gap-4">
