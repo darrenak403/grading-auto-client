@@ -36,6 +36,7 @@ export function DetailSubmissionDialog({
   const [submission, setSubmission] = React.useState<ExtendedSubmission | null>(null);
   const [results, setResults] = React.useState<QuestionResult[]>([]);
   const [gradingJobs, setGradingJobs] = React.useState<GradingJob[]>([]);
+  const [templateCandidates, setTemplateCandidates] = React.useState<Submission[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [activeTab, setActiveTab] = React.useState<Tab>("results");
@@ -46,11 +47,22 @@ export function DetailSubmissionDialog({
   const [savingNotes, setSavingNotes] = React.useState(false);
   const [notesMessage, setNotesMessage] = React.useState<string | null>(null);
 
+  const [customTemplateSubmissionId, setCustomTemplateSubmissionId] = React.useState("");
+  const [customScore, setCustomScore] = React.useState("8");
+  const [customReason, setCustomReason] = React.useState("");
+  const [customAdjustedBy, setCustomAdjustedBy] = React.useState("");
+  const [importingCustomResult, setImportingCustomResult] = React.useState(false);
+  const [customResultMessage, setCustomResultMessage] = React.useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
   const loadSubmission = React.useCallback(async () => {
     if (!submissionId) return;
     try {
       setLoading(true);
       setError(null);
+      setTemplateCandidates([]);
       const [subRes, resultsRes, jobsRes] = await Promise.all([
         api.getSubmissionById(submissionId),
         api.getSubmissionResults(submissionId),
@@ -62,6 +74,19 @@ export function DetailSubmissionDialog({
         setSubmission(subData);
         setNotes(subData.notes || "");
         setReviewedBy(subData.reviewedBy || "");
+
+        const candidatesRes = await api.getSubmissionsByAssignment(subData.assignmentId);
+        if (candidatesRes.status && candidatesRes.data) {
+          setTemplateCandidates(
+            candidatesRes.data.filter((candidate) =>
+              candidate.id !== subData.id &&
+              typeof candidate.totalScore === "number" &&
+              typeof candidate.maxScore === "number" &&
+              candidate.maxScore > 0 &&
+              candidate.totalScore === candidate.maxScore
+            )
+          );
+        }
       } else {
         setError(subRes.message || "Failed to load submission details");
       }
@@ -89,6 +114,7 @@ export function DetailSubmissionDialog({
       setSubmission(null);
       setResults([]);
       setGradingJobs([]);
+      setTemplateCandidates([]);
     }
   }, [open, submissionId, loadSubmission]);
 
@@ -115,6 +141,64 @@ export function DetailSubmissionDialog({
     }
   }, [submissionId, notes, reviewedBy, onRefresh]);
 
+  const handleImportCustomResult = React.useCallback(async () => {
+    if (!submissionId) return;
+
+    const templateSubmissionId = customTemplateSubmissionId.trim();
+    const reason = customReason.trim();
+    const adjustedBy = customAdjustedBy.trim();
+    const score = Number(customScore);
+
+    if (!templateSubmissionId) {
+      setCustomResultMessage({ type: "error", text: "Template submission id is required" });
+      return;
+    }
+    if (templateSubmissionId === submissionId) {
+      setCustomResultMessage({ type: "error", text: "Template submission must be different from target submission" });
+      return;
+    }
+    if (!Number.isFinite(score) || score < 0) {
+      setCustomResultMessage({ type: "error", text: "Score must be a valid non-negative number" });
+      return;
+    }
+    if (!reason) {
+      setCustomResultMessage({ type: "error", text: "Reason is required" });
+      return;
+    }
+
+    try {
+      setImportingCustomResult(true);
+      setCustomResultMessage(null);
+      const res = await api.importCustomSubmissionResult(submissionId, {
+        templateSubmissionId,
+        score,
+        reason,
+        adjustedBy: adjustedBy || undefined,
+      });
+
+      if (res.status) {
+        setCustomResultMessage({ type: "success", text: "Custom result imported successfully" });
+        setCustomReason("");
+        await loadSubmission();
+        if (onRefresh) onRefresh();
+      } else {
+        setCustomResultMessage({ type: "error", text: res.message || "Failed to import custom result" });
+      }
+    } catch {
+      setCustomResultMessage({ type: "error", text: "Server connection error occurred" });
+    } finally {
+      setImportingCustomResult(false);
+    }
+  }, [
+    submissionId,
+    customTemplateSubmissionId,
+    customScore,
+    customReason,
+    customAdjustedBy,
+    loadSubmission,
+    onRefresh,
+  ]);
+
   // Callback khi điểm số được điều chỉnh
   const handleScoreAdjusted = React.useCallback(async () => {
     // Tải lại dữ liệu chi tiết bài nộp để cập nhật điểm số tổng
@@ -140,6 +224,17 @@ export function DetailSubmissionDialog({
   const totalScore = results.reduce((sum, r) => sum + effectiveScore(r), 0);
   const maxScore = results.reduce((sum, r) => sum + r.maxScore, 0);
   const passCount = results.filter((r) => effectiveScore(r) >= r.maxScore).length;
+  const hasActiveGradingJob = gradingJobs.some(
+    (job) => job.status === "Pending" || job.status === "Running"
+  );
+  const customTemplateListId = `custom-template-options-${submission?.id ?? "new"}`;
+  const canImportCustomResult =
+    !importingCustomResult &&
+    !hasActiveGradingJob &&
+    customTemplateSubmissionId.trim().length > 0 &&
+    customReason.trim().length > 0 &&
+    Number.isFinite(Number(customScore)) &&
+    Number(customScore) >= 0;
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "results", label: "Grading Results" },
@@ -484,6 +579,119 @@ export function DetailSubmissionDialog({
                   {/* ===== REVIEW TAB ===== */}
                   {activeTab === "review" && (
                     <div className="space-y-8">
+                      <div className="bg-white border border-[#ebebeb] rounded-2xl p-6 shadow-sm shadow-black/5">
+                        <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between mb-5">
+                          <div>
+                            <h3 className="text-base font-semibold text-[#222222]">
+                              Set Custom Total Score
+                            </h3>
+                            <p className="mt-1 text-xs font-medium text-[#717171]">
+                              Copy result from a full-score template submission and scale it to the target score.
+                            </p>
+                          </div>
+                          <span className="text-xs font-semibold text-[#222222] bg-[#f4f4f5] border border-[#ebebeb] rounded-xl px-3 py-1.5">
+                            Current: {totalScore} / {maxScore}
+                          </span>
+                        </div>
+
+                        {customResultMessage && (
+                          <div
+                            className={`p-3 border rounded-xl text-xs font-semibold mb-4 animate-in fade-in slide-in-from-top-1 duration-200 ${customResultMessage.type === "success"
+                              ? "bg-emerald-50 border-emerald-100 text-emerald-800"
+                              : "bg-red-50 border-red-100 text-red-800"
+                              }`}
+                          >
+                            {customResultMessage.text}
+                          </div>
+                        )}
+
+                        {hasActiveGradingJob && (
+                          <div className="p-3 border border-amber-100 bg-amber-50 rounded-xl text-xs font-semibold text-amber-800 mb-4">
+                            This submission has an active grading job. Wait until grading finishes before importing a custom result.
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                          <div className="md:col-span-7">
+                            <label className="block text-[10px] font-semibold text-[#717171] uppercase tracking-wider mb-2">
+                              Full-score Template Submission
+                            </label>
+                            <input
+                              type="text"
+                              list={customTemplateListId}
+                              value={customTemplateSubmissionId}
+                              onChange={(e) => setCustomTemplateSubmissionId(e.target.value)}
+                              placeholder="Paste template submission id or choose a 10/10 submission..."
+                              className="w-full bg-white border border-[#ebebeb] text-[#222222] rounded-xl px-3.5 py-2.5 text-xs focus:outline-none transition-all focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/20 placeholder:text-[#a1a1aa] hover:border-[#d4d4d8] font-medium h-[38px]"
+                            />
+                            <datalist id={customTemplateListId}>
+                              {templateCandidates.map((candidate) => (
+                                <option
+                                  key={candidate.id}
+                                  value={candidate.id}
+                                  label={`${candidate.studentCode} - ${candidate.totalScore}/${candidate.maxScore}`}
+                                />
+                              ))}
+                            </datalist>
+                            <p className="mt-1.5 text-[11px] font-medium text-[#717171]">
+                              {templateCandidates.length > 0
+                                ? `${templateCandidates.length} full-score template submission(s) found in this assignment.`
+                                : "No full-score template found in the loaded list; paste a submission id manually if needed."}
+                            </p>
+                          </div>
+
+                          <div className="md:col-span-2">
+                            <label className="block text-[10px] font-semibold text-[#717171] uppercase tracking-wider mb-2">
+                              Target Score
+                            </label>
+                            <input
+                              type="number"
+                              min={0}
+                              step={0.25}
+                              value={customScore}
+                              onChange={(e) => setCustomScore(e.target.value)}
+                              className="w-full bg-white border border-[#ebebeb] text-[#222222] rounded-xl px-3.5 py-2.5 text-xs focus:outline-none transition-all focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/20 placeholder:text-[#a1a1aa] hover:border-[#d4d4d8] font-medium h-[38px]"
+                            />
+                          </div>
+
+                          <div className="md:col-span-3">
+                            <label className="block text-[10px] font-semibold text-[#717171] uppercase tracking-wider mb-2">
+                              Adjusted By
+                            </label>
+                            <input
+                              type="text"
+                              value={customAdjustedBy}
+                              onChange={(e) => setCustomAdjustedBy(e.target.value)}
+                              placeholder="Teacher name/email..."
+                              className="w-full bg-white border border-[#ebebeb] text-[#222222] rounded-xl px-3.5 py-2.5 text-xs focus:outline-none transition-all focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/20 placeholder:text-[#a1a1aa] hover:border-[#d4d4d8] font-medium h-[38px]"
+                            />
+                          </div>
+
+                          <div className="md:col-span-9">
+                            <label className="block text-[10px] font-semibold text-[#717171] uppercase tracking-wider mb-2">
+                              Reason
+                            </label>
+                            <textarea
+                              value={customReason}
+                              onChange={(e) => setCustomReason(e.target.value)}
+                              rows={3}
+                              placeholder="Enter reason for importing custom result..."
+                              className="w-full bg-white border border-[#ebebeb] text-[#222222] rounded-xl px-3.5 py-2.5 text-xs focus:outline-none transition-all focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/20 placeholder:text-[#a1a1aa] hover:border-[#d4d4d8] font-medium resize-y min-h-[78px]"
+                            />
+                          </div>
+
+                          <div className="md:col-span-3 flex md:items-end">
+                            <button
+                              onClick={handleImportCustomResult}
+                              disabled={!canImportCustomResult}
+                              className="w-full px-4 py-2.5 bg-[#222222] hover:bg-[#111111] text-white rounded-xl text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:pointer-events-none min-h-[38px] select-none"
+                            >
+                              {importingCustomResult ? "Importing..." : "Import Custom Result"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
                       {/* Ghi chú chung */}
                       <div className="bg-white border border-[#ebebeb] rounded-2xl p-6 shadow-sm shadow-black/5">
                         <h3 className="text-base font-semibold text-[#222222] mb-5">

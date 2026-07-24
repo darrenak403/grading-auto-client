@@ -60,6 +60,11 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
   const [adjustResultId, setAdjustResultId] = React.useState("");
   const [adjustScore, setAdjustScore] = React.useState("");
   const [adjustReason, setAdjustReason] = React.useState("");
+  const [totalAdjustOpen, setTotalAdjustOpen] = React.useState(false);
+  const [totalAdjustScore, setTotalAdjustScore] = React.useState("8");
+  const [totalAdjustReason, setTotalAdjustReason] = React.useState("Custom total score adjustment");
+  const [totalAdjustTemplateId, setTotalAdjustTemplateId] = React.useState("");
+  const [totalAdjusting, setTotalAdjusting] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [syncing, setSyncing] = React.useState(false);
   const [syncDialogOpen, setSyncDialogOpen] = React.useState(false);
@@ -134,6 +139,17 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
   }, [registerOnProgressUpdate, loadRoster, loadResults, selectedId]);
 
   const selectedRosterItem = roster.find((r) => r.submissionId === selectedId);
+  const fullScoreTemplates = React.useMemo(
+    () =>
+      roster.filter(
+        (row) =>
+          row.submissionId !== selectedId &&
+          !isRosterScorePending(row) &&
+          row.maxScore > 0 &&
+          row.totalScore === row.maxScore
+      ),
+    [roster, selectedId]
+  );
 
   const maxScoreByTcId = React.useMemo(() => {
     const map = new Map<string, number>();
@@ -186,8 +202,57 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
 
   const displayTotal =
     results && !detailScorePending ? sumEffectiveScores(results.results) : null;
+  const selectedMaxScore = selectedRosterItem?.maxScore ?? 0;
   const adjustTcId = results?.results.find((r) => r.id === adjustResultId)
     ?.labTestCaseId;
+
+  const openTotalAdjust = () => {
+    const defaultScore = Math.min(8, selectedMaxScore || 8);
+    setTotalAdjustScore(String(defaultScore));
+    setTotalAdjustReason(`Custom total score adjustment to ${defaultScore}/${selectedMaxScore || 10}`);
+    setTotalAdjustTemplateId(fullScoreTemplates[0]?.submissionId ?? "");
+    setTotalAdjustOpen(true);
+  };
+
+  const handleTotalAdjust = async () => {
+    if (!selectedId || !results) return;
+
+    const targetScore = parseFloat(totalAdjustScore);
+    const reason =
+      totalAdjustReason.trim() ||
+      `Custom total score adjustment to ${targetScore}/${selectedMaxScore || 10}`;
+    if (Number.isNaN(targetScore) || targetScore < 0) {
+      toast("Target score is invalid", "error");
+      return;
+    }
+    if (selectedMaxScore > 0 && targetScore > selectedMaxScore) {
+      toast(`Target score must be <= ${selectedMaxScore}`, "error");
+      return;
+    }
+
+    try {
+      setTotalAdjusting(true);
+
+      const res = await api.importLabCustomResult(selectedId, {
+        ...(totalAdjustTemplateId ? { templateSubmissionId: totalAdjustTemplateId } : {}),
+        score: targetScore,
+        reason,
+      });
+      if (!res.status || !res.data) {
+        toast(res.message || "Custom result import failed", "error");
+        return;
+      }
+
+      toast(`Total score adjusted to ${targetScore}/${selectedMaxScore || targetScore}`);
+      setTotalAdjustOpen(false);
+      setResults(res.data);
+      await loadRoster();
+    } catch (error) {
+      toast(error instanceof Error ? error.message : "Error adjusting total score", "error");
+    } finally {
+      setTotalAdjusting(false);
+    }
+  };
 
   const runningId = progress?.runningSubmissionId;
   const syncableRoster = React.useMemo(
@@ -678,9 +743,20 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
                   </p>
                 )}
               </div>
-              <Button type="button" size="sm" onClick={handleRegrade}>
-                Regrade
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={openTotalAdjust}
+                  disabled={detailScorePending || !results.results.length}
+                >
+                  Set 8/10
+                </Button>
+                <Button type="button" size="sm" onClick={handleRegrade}>
+                  Regrade
+                </Button>
+              </div>
             </div>
 
             <div className="overflow-x-auto overflow-y-hidden rounded-xl border border-[#ebebeb] shrink-0">
@@ -1028,6 +1104,68 @@ export function ResultsTab({ assignmentId }: ResultsTabProps) {
             rows={3}
             placeholder="Required"
           />
+        </div>
+      </Modal>
+
+      <Modal
+        open={totalAdjustOpen}
+        onClose={() => {
+          if (!totalAdjusting) setTotalAdjustOpen(false);
+        }}
+        title="Set custom total score"
+        description="Scale this submission's testcase scores from a full-score template, defaulting to 8/10."
+        maxWidth={460}
+        footer={
+          <ModalActions
+            onCancel={() => {
+              if (!totalAdjusting) setTotalAdjustOpen(false);
+            }}
+            onConfirm={handleTotalAdjust}
+            confirmLabel="Apply score"
+            confirmLoading={totalAdjusting}
+            confirmDisabled={
+              totalAdjusting ||
+              !totalAdjustScore.trim()
+            }
+          />
+        }
+      >
+        <div className="flex flex-col gap-4">
+          <FormSelect
+            label="Result source"
+            value={totalAdjustTemplateId}
+            onValueChange={setTotalAdjustTemplateId}
+            options={[
+              { value: "", label: "Use built-in sample result" },
+              ...fullScoreTemplates.map((row) => ({
+                value: row.submissionId,
+                label: `${row.studentCode} - ${row.totalScore}/${row.maxScore}`,
+              })),
+            ]}
+            placeholder="Use built-in sample result"
+            disabled={totalAdjusting}
+          />
+          <Input
+            label={`Target score${selectedMaxScore ? ` / ${selectedMaxScore}` : ""}`}
+            type="number"
+            min={0}
+            max={selectedMaxScore || undefined}
+            step={0.25}
+            value={totalAdjustScore}
+            onChange={(e) => setTotalAdjustScore(e.target.value)}
+            disabled={totalAdjusting}
+          />
+          <Textarea
+            label="Reason"
+            value={totalAdjustReason}
+            onChange={(e) => setTotalAdjustReason(e.target.value)}
+            rows={3}
+            placeholder="Required"
+            disabled={totalAdjusting}
+          />
+          <p className="text-xs font-medium text-[#717171]">
+            Leave template empty to use the built-in passing sample result from approved test cases.
+          </p>
         </div>
       </Modal>
     </div>

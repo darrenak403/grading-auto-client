@@ -19,6 +19,7 @@ import type {
   CreateTestCaseRequest,
   CreateExamSessionRequest,
   AdjustQuestionResultRequest,
+  ImportCustomSubmissionResultRequest,
   UpdateReviewNoteRequest,
   CreateExportRequest,
   SemesterDto,
@@ -34,6 +35,7 @@ import type {
   LabApproveAllResult,
   LabGradeResult,
   LabAdjustRequest,
+  LabImportCustomResultRequest,
   LabDeleteCountResult,
   LabRegradeResult,
   LabRegradeAllResult,
@@ -479,6 +481,16 @@ class ApiClient {
     );
   }
 
+  async importCustomSubmissionResult(
+    submissionId: string,
+    req: ImportCustomSubmissionResultRequest
+  ): Promise<ApiResponse<QuestionResult[]>> {
+    return this.put<QuestionResult[]>(
+      `/submissions/${submissionId}/custom-result`,
+      req
+    );
+  }
+
   async deleteSubmission(submissionId: string): Promise<ApiResponse<Submission>> {
     return this.delete<Submission>(`/submissions/${submissionId}`);
   }
@@ -833,6 +845,16 @@ class ApiClient {
     body: LabAdjustRequest
   ): Promise<ApiResponse<unknown>> {
     return this.put<unknown>(`/lab-submissions/${submissionId}/adjust`, body);
+  }
+
+  async importLabCustomResult(
+    submissionId: string,
+    body: LabImportCustomResultRequest
+  ): Promise<ApiResponse<LabSubmissionResultDto>> {
+    return this.put<LabSubmissionResultDto>(
+      `/lab-submissions/${submissionId}/custom-result`,
+      body
+    );
   }
 }
 

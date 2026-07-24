@@ -181,6 +181,12 @@ export interface LabAdjustRequest {
   reason: string;
 }
 
+export interface LabImportCustomResultRequest {
+  templateSubmissionId?: string;
+  score: number;
+  reason: string;
+}
+
 export interface LabDeleteCountResult {
   deleted: number;
 }

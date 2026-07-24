@@ -250,6 +250,13 @@ export interface AdjustQuestionResultRequest {
   adjustedBy?: string;
 }
 
+export interface ImportCustomSubmissionResultRequest {
+  templateSubmissionId: string;
+  score: number;
+  reason: string;
+  adjustedBy?: string;
+}
+
 export interface UpdateReviewNoteRequest {
   content: string;
   reviewedBy?: string;
