@@ -10,21 +10,25 @@ type BadgeVariant =
   | "default"
   | "orange"
   | "api"
-  | "razor";
+  | "razor"
+  | "method-get"
+  | "method-post"
+  | "method-put"
+  | "method-delete";
 
 const variantStyles: Record<
   BadgeVariant,
   { bg: string; text: string; border: string }
 > = {
   pending: {
-    bg: "#fffdf9",
-    text: "#939084",
-    border: "#c5c0b1",
+    bg: "#fcfcfc",
+    text: "#717171",
+    border: "#ebebeb",
   },
   running: {
-    bg: "#fff8f0",
-    text: "#ff4f00",
-    border: "#ff4f00",
+    bg: "#fff7ed",
+    text: "#f97316",
+    border: "#fdba74",
   },
   done: {
     bg: "#f0fdf4",
@@ -37,14 +41,14 @@ const variantStyles: Record<
     border: "#fecaca",
   },
   default: {
-    bg: "#eceae3",
-    text: "#36342e",
-    border: "#c5c0b1",
+    bg: "#f4f4f5",
+    text: "#3f3f46",
+    border: "#ebebeb",
   },
   orange: {
-    bg: "#fff4ed",
-    text: "#ff4f00",
-    border: "#ff4f00",
+    bg: "#fff7ed",
+    text: "#f97316",
+    border: "#fdba74",
   },
   api: {
     bg: "#f0f9ff",
@@ -55,6 +59,26 @@ const variantStyles: Record<
     bg: "#faf5ff",
     text: "#7c3aed",
     border: "#e9d5ff",
+  },
+  "method-get": {
+    bg: "#61affe",
+    text: "#ffffff",
+    border: "#61affe",
+  },
+  "method-post": {
+    bg: "#49cc90",
+    text: "#ffffff",
+    border: "#49cc90",
+  },
+  "method-put": {
+    bg: "#fca130",
+    text: "#ffffff",
+    border: "#fca130",
+  },
+  "method-delete": {
+    bg: "#f93e3e",
+    text: "#ffffff",
+    border: "#f93e3e",
   },
 };
 

@@ -1,0 +1,6 @@
+- spacing consistent
+- typography hierarchy clear
+- responsive OK
+- loading state exists
+- empty state exists
+- error state exists

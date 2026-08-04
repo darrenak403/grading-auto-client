@@ -19,8 +19,35 @@ import type {
   CreateTestCaseRequest,
   CreateExamSessionRequest,
   AdjustQuestionResultRequest,
+  ImportCustomSubmissionResultRequest,
   UpdateReviewNoteRequest,
   CreateExportRequest,
+  SemesterDto,
+  SemesterFormValues,
+  LabAssignmentDto,
+  LabAssignmentFormValues,
+  LabTestCaseDto,
+  LabTestCaseFormValues,
+  LabTestCaseStatus,
+  LabSubmissionDto,
+  LabSubmissionResultDto,
+  LabBulkUploadResult,
+  LabApproveAllResult,
+  LabGradeResult,
+  LabAdjustRequest,
+  LabImportCustomResultRequest,
+  LabDeleteCountResult,
+  LabRegradeResult,
+  LabRegradeAllResult,
+  LabAssignmentRosterItemDto,
+  LabGradingProgressDto,
+  LabSyncSupabaseGradeRequest,
+  LabSyncSupabaseGradeResult,
+  LabSyncSupabaseGradesRequest,
+  LabSyncSupabaseGradesResult,
+  LabSyncSupabaseRequest,
+  LabSyncSupabaseResult,
+  LabSupabaseDropdownOptions,
 } from "@/types";
 
 class ApiClient {
@@ -28,6 +55,13 @@ class ApiClient {
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
+  }
+
+  private getAuthHeaders(): Record<string, string> {
+    if (typeof window === "undefined") return {};
+    const token = localStorage.getItem("auth_token");
+    if (!token) return {};
+    return { Authorization: `Bearer ${token}` };
   }
 
   private async request<T>(
@@ -39,6 +73,7 @@ class ApiClient {
     const config: RequestInit = {
       headers: {
         "Content-Type": "application/json",
+        ...this.getAuthHeaders(),
         ...options.headers,
       },
       ...options,
@@ -46,6 +81,14 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config);
+
+      if (response.status === 204) {
+        return {
+          status: response.ok,
+          message: "Success",
+        };
+      }
+
       const data = await response.json();
 
       if (!response.ok) {
@@ -92,6 +135,13 @@ class ApiClient {
     return this.request<T>(endpoint, { method: "DELETE" });
   }
 
+  async patch<T>(endpoint: string, body?: unknown): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, {
+      method: "PATCH",
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  }
+
   async uploadFile<T>(
     endpoint: string,
     formData: FormData
@@ -101,6 +151,7 @@ class ApiClient {
     try {
       const response = await fetch(url, {
         method: "POST",
+        headers: this.getAuthHeaders(),
         body: formData,
       });
 
@@ -136,6 +187,7 @@ class ApiClient {
     try {
       const response = await fetch(url, {
         method: "PUT",
+        headers: this.getAuthHeaders(),
         body: formData,
       });
 
@@ -184,28 +236,49 @@ class ApiClient {
   }
 
   async getExamSessionParticipants(
-    sessionId: string
+    sessionId: string,
+    assignmentId?: string
   ): Promise<ApiResponse<Participant[]>> {
-    return this.get<Participant[]>(`/exam-sessions/${sessionId}/participants`);
+    const query = assignmentId
+      ? `?assignmentId=${encodeURIComponent(assignmentId)}`
+      : "";
+    return this.get<Participant[]>(
+      `/exam-sessions/${sessionId}/participants${query}`
+    );
   }
 
   async getExamSessionResults(
     sessionId: string,
-    gradingRound?: string
+    gradingRound?: string,
+    assignmentId?: string
   ): Promise<ApiResponse<SessionSubmissionResult[]>> {
-    const query = gradingRound
-      ? `?gradingRound=${encodeURIComponent(gradingRound)}`
-      : "";
+    const params = new URLSearchParams();
+    if (gradingRound) params.set("gradingRound", gradingRound);
+    if (assignmentId) params.set("assignmentId", assignmentId);
+    const query = params.toString() ? `?${params.toString()}` : "";
     return this.get<SessionSubmissionResult[]>(
       `/exam-sessions/${sessionId}/results${query}`
     );
   }
 
+  async getExamSessionRounds(
+    sessionId: string,
+    assignmentId?: string
+  ): Promise<ApiResponse<string[]>> {
+    const query = assignmentId
+      ? `?assignmentId=${encodeURIComponent(assignmentId)}`
+      : "";
+    return this.get<string[]>(`/exam-sessions/${sessionId}/rounds${query}`);
+  }
+
   async createExamSessionExport(
     sessionId: string,
-    gradingRound?: string
+    gradingRound?: string,
+    assignmentId?: string
   ): Promise<ApiResponse<ExportJob>> {
-    const body = gradingRound ? { gradingRound } : {};
+    const body: { gradingRound?: string; assignmentId?: string } = {};
+    if (gradingRound) body.gradingRound = gradingRound;
+    if (assignmentId) body.assignmentId = assignmentId;
     return this.post<ExportJob>(`/exam-sessions/${sessionId}/exports`, body);
   }
 
@@ -285,37 +358,48 @@ class ApiClient {
 
   async bulkUpload(
     assignmentId: string,
-    zipFile: File,
-    gradingRound?: string
+    zipFile: File
   ): Promise<ApiResponse<BulkUploadResult>> {
     const formData = new FormData();
     formData.append("file", zipFile);
-    if (gradingRound) {
-      formData.append("gradingRound", gradingRound);
-    }
     return this.uploadFile<BulkUploadResult>(
       `/assignments/${assignmentId}/bulk-upload`,
       formData
     );
   }
 
-  async triggerGrading(
+  async createGradingRound(
     assignmentId: string,
-    gradingRound?: string
-  ): Promise<ApiResponse<number>> {
-    const query = gradingRound
-      ? `?gradingRound=${encodeURIComponent(gradingRound)}`
-      : "";
+    zipFile: File
+  ): Promise<ApiResponse<BulkUploadResult>> {
+    const formData = new FormData();
+    formData.append("file", zipFile);
+    return this.uploadFile<BulkUploadResult>(
+      `/assignments/${assignmentId}/rounds`,
+      formData
+    );
+  }
+
+  async getAssignmentRounds(
+    assignmentId: string
+  ): Promise<ApiResponse<string[]>> {
+    return this.get<string[]>(`/assignments/${assignmentId}/rounds`);
+  }
+
+  async triggerGrading(assignmentId: string, gradingRound?: string | null): Promise<ApiResponse<number>> {
+    const query = gradingRound ? `?gradingRound=${encodeURIComponent(gradingRound)}` : "";
     return this.post<number>(`/assignments/${assignmentId}/grade${query}`);
   }
 
   async getSubmissionsByAssignment(
     assignmentId: string,
-    studentCode?: string
+    studentCode?: string,
+    gradingRound?: string
   ): Promise<ApiResponse<Submission[]>> {
-    const query = studentCode
-      ? `?studentCode=${encodeURIComponent(studentCode)}`
-      : "";
+    const params = new URLSearchParams();
+    if (studentCode) params.set("studentCode", studentCode);
+    if (gradingRound) params.set("gradingRound", gradingRound);
+    const query = params.toString() ? `?${params.toString()}` : "";
     return this.get<Submission[]>(
       `/assignments/${assignmentId}/submissions${query}`
     );
@@ -394,6 +478,16 @@ class ApiClient {
   ): Promise<ApiResponse<QuestionResult[]>> {
     return this.get<QuestionResult[]>(
       `/submissions/${submissionId}/question-results`
+    );
+  }
+
+  async importCustomSubmissionResult(
+    submissionId: string,
+    req: ImportCustomSubmissionResultRequest
+  ): Promise<ApiResponse<QuestionResult[]>> {
+    return this.put<QuestionResult[]>(
+      `/submissions/${submissionId}/custom-result`,
+      req
     );
   }
 
@@ -478,7 +572,289 @@ class ApiClient {
 
   async downloadExport(exportId: string): Promise<Response> {
     const url = `${this.baseUrl}/exports/${exportId}/download`;
-    return fetch(url);
+    return fetch(url, { headers: this.getAuthHeaders() });
+  }
+
+  // ====== Semester Endpoints ======
+  async getSemesters(): Promise<ApiResponse<SemesterDto[]>> {
+    return this.get<SemesterDto[]>("/semesters");
+  }
+
+  async getSemesterById(id: string): Promise<ApiResponse<SemesterDto>> {
+    return this.get<SemesterDto>(`/semesters/${id}`);
+  }
+
+  async createSemester(
+    body: SemesterFormValues
+  ): Promise<ApiResponse<SemesterDto>> {
+    return this.post<SemesterDto>("/semesters", body);
+  }
+
+  async updateSemester(
+    id: string,
+    body: SemesterFormValues
+  ): Promise<ApiResponse<SemesterDto>> {
+    return this.put<SemesterDto>(`/semesters/${id}`, body);
+  }
+
+  async deleteSemester(id: string): Promise<ApiResponse<void>> {
+    return this.delete<void>(`/semesters/${id}`);
+  }
+
+  // ====== Lab Assignment Endpoints ======
+  async getLabAssignments(): Promise<ApiResponse<LabAssignmentDto[]>> {
+    return this.get<LabAssignmentDto[]>("/lab-assignments");
+  }
+
+  async getLabAssignmentById(
+    id: string
+  ): Promise<ApiResponse<LabAssignmentDto>> {
+    return this.get<LabAssignmentDto>(`/lab-assignments/${id}`);
+  }
+
+  async createLabAssignment(
+    body: LabAssignmentFormValues
+  ): Promise<ApiResponse<LabAssignmentDto>> {
+    return this.post<LabAssignmentDto>("/lab-assignments", body);
+  }
+
+  async updateLabAssignment(
+    id: string,
+    body: LabAssignmentFormValues
+  ): Promise<ApiResponse<LabAssignmentDto>> {
+    return this.put<LabAssignmentDto>(`/lab-assignments/${id}`, body);
+  }
+
+  async deleteLabAssignment(id: string): Promise<ApiResponse<void>> {
+    return this.delete<void>(`/lab-assignments/${id}`);
+  }
+
+  async triggerLabGrading(id: string): Promise<ApiResponse<LabGradeResult>> {
+    return this.post<LabGradeResult>(`/lab-assignments/${id}/grade-all`);
+  }
+
+  async createLabAssignmentExport(
+    id: string
+  ): Promise<ApiResponse<ExportJob>> {
+    return this.post<ExportJob>(`/lab-assignments/${id}/exports`);
+  }
+
+  async syncLabAssignmentSupabase(
+    id: string,
+    body?: LabSyncSupabaseRequest
+  ): Promise<ApiResponse<LabSyncSupabaseResult>> {
+    return this.post<LabSyncSupabaseResult>(
+      `/lab-assignments/${id}/sync-supabase`,
+      body
+    );
+  }
+
+  async syncLabSupabaseGrade(
+    body: LabSyncSupabaseGradeRequest
+  ): Promise<ApiResponse<LabSyncSupabaseGradeResult>> {
+    return this.post<LabSyncSupabaseGradeResult>(
+      "/lab-assignments/sync-supabase-grade",
+      body
+    );
+  }
+
+  async syncLabSupabaseGrades(
+    body: LabSyncSupabaseGradesRequest
+  ): Promise<ApiResponse<LabSyncSupabaseGradesResult>> {
+    return this.post<LabSyncSupabaseGradesResult>(
+      "/lab-assignments/sync-supabase-grades",
+      body
+    );
+  }
+
+  async getLabSupabaseDropdownOptions(params?: {
+    termId?: string;
+    className?: string;
+    labCode?: string;
+  }): Promise<ApiResponse<LabSupabaseDropdownOptions>> {
+    const search = new URLSearchParams();
+    if (params?.termId) search.set("termId", params.termId);
+    if (params?.className) search.set("className", params.className);
+    if (params?.labCode) search.set("labCode", params.labCode);
+    const query = search.size ? `?${search.toString()}` : "";
+    return this.get<LabSupabaseDropdownOptions>(
+      `/lab-assignments/supabase-dropdown-options${query}`
+    );
+  }
+
+  async getLabAssignmentRoster(
+    assignmentId: string
+  ): Promise<ApiResponse<LabAssignmentRosterItemDto[]>> {
+    return this.get<LabAssignmentRosterItemDto[]>(
+      `/lab-assignments/${assignmentId}/roster`
+    );
+  }
+
+  async getLabGradingProgress(
+    assignmentId: string
+  ): Promise<ApiResponse<LabGradingProgressDto>> {
+    return this.get<LabGradingProgressDto>(
+      `/lab-assignments/${assignmentId}/grading-progress`
+    );
+  }
+
+  async bulkUploadLabSubmissions(
+    assignmentId: string,
+    zipFile: File
+  ): Promise<ApiResponse<LabBulkUploadResult>> {
+    const formData = new FormData();
+    formData.append("file", zipFile);
+    return this.uploadFile<LabBulkUploadResult>(
+      `/lab-assignments/${assignmentId}/bulk-upload`,
+      formData
+    );
+  }
+
+  // ====== Lab Test Case Endpoints ======
+  async getLabTestCases(
+    assignmentId: string
+  ): Promise<ApiResponse<LabTestCaseDto[]>> {
+    return this.get<LabTestCaseDto[]>(
+      `/lab-assignments/${assignmentId}/testcases`
+    );
+  }
+
+  async createLabTestCase(
+    assignmentId: string,
+    body: LabTestCaseFormValues
+  ): Promise<ApiResponse<LabTestCaseDto>> {
+    return this.post<LabTestCaseDto>(
+      `/lab-assignments/${assignmentId}/testcases`,
+      body
+    );
+  }
+
+  async batchCreateLabTestCases(
+    assignmentId: string,
+    body: LabTestCaseFormValues[]
+  ): Promise<ApiResponse<LabTestCaseDto[]>> {
+    return this.post<LabTestCaseDto[]>(
+      `/lab-assignments/${assignmentId}/testcases/batch`,
+      body
+    );
+  }
+
+  async deleteAllLabTestCases(
+    assignmentId: string
+  ): Promise<ApiResponse<LabDeleteCountResult>> {
+    return this.delete<LabDeleteCountResult>(
+      `/lab-assignments/${assignmentId}/testcases`
+    );
+  }
+
+  async updateLabTestCase(
+    tcId: string,
+    body: LabTestCaseFormValues
+  ): Promise<ApiResponse<LabTestCaseDto>> {
+    return this.put<LabTestCaseDto>(`/lab-testcases/${tcId}`, body);
+  }
+
+  async deleteLabTestCase(tcId: string): Promise<ApiResponse<void>> {
+    return this.delete<void>(`/lab-testcases/${tcId}`);
+  }
+
+  async patchLabTestCaseStatus(
+    tcId: string,
+    status: LabTestCaseStatus
+  ): Promise<ApiResponse<LabTestCaseDto>> {
+    return this.patch<LabTestCaseDto>(`/lab-testcases/${tcId}/status`, {
+      status,
+    });
+  }
+
+  async approveAllLabTestCases(
+    assignmentId: string
+  ): Promise<ApiResponse<LabApproveAllResult>> {
+    return this.patch<LabApproveAllResult>(
+      `/lab-assignments/${assignmentId}/testcases/approve-all`
+    );
+  }
+
+  // ====== Lab Submission Endpoints ======
+  async getLabSubmissions(
+    assignmentId: string
+  ): Promise<ApiResponse<LabSubmissionDto[]>> {
+    return this.get<LabSubmissionDto[]>(
+      `/lab-submissions?assignmentId=${encodeURIComponent(assignmentId)}`
+    );
+  }
+
+  async getLabSubmissionById(
+    id: string
+  ): Promise<ApiResponse<LabSubmissionDto>> {
+    return this.get<LabSubmissionDto>(`/lab-submissions/${id}`);
+  }
+
+  async uploadLabSubmissions(
+    assignmentId: string,
+    files: File[]
+  ): Promise<ApiResponse<LabBulkUploadResult>> {
+    const formData = new FormData();
+    for (const file of files) {
+      formData.append("files", file);
+    }
+    return this.uploadFile<LabBulkUploadResult>(
+      `/lab-submissions?assignmentId=${encodeURIComponent(assignmentId)}`,
+      formData
+    );
+  }
+
+  async deleteLabSubmission(id: string): Promise<ApiResponse<unknown>> {
+    return this.delete<unknown>(`/lab-submissions/${id}`);
+  }
+
+  async deleteAllLabSubmissions(
+    assignmentId: string
+  ): Promise<ApiResponse<LabDeleteCountResult>> {
+    return this.delete<LabDeleteCountResult>(
+      `/lab-submissions?assignmentId=${encodeURIComponent(assignmentId)}`
+    );
+  }
+
+  async getLabSubmissionResults(
+    submissionId: string
+  ): Promise<ApiResponse<LabSubmissionResultDto>> {
+    return this.get<LabSubmissionResultDto>(
+      `/lab-submissions/${submissionId}/results`
+    );
+  }
+
+  async regradeLabSubmission(
+    submissionId: string
+  ): Promise<ApiResponse<LabRegradeResult>> {
+    return this.post<LabRegradeResult>(
+      `/lab-submissions/${submissionId}/regrade`
+    );
+  }
+
+  async regradeAllLabSubmissions(
+    assignmentId: string
+  ): Promise<ApiResponse<LabRegradeAllResult>> {
+    return this.post<LabRegradeAllResult>(
+      `/lab-submissions/regrade-all?assignmentId=${encodeURIComponent(assignmentId)}`
+    );
+  }
+
+  async adjustLabSubmissionResult(
+    submissionId: string,
+    body: LabAdjustRequest
+  ): Promise<ApiResponse<unknown>> {
+    return this.put<unknown>(`/lab-submissions/${submissionId}/adjust`, body);
+  }
+
+  async importLabCustomResult(
+    submissionId: string,
+    body: LabImportCustomResultRequest
+  ): Promise<ApiResponse<LabSubmissionResultDto>> {
+    return this.put<LabSubmissionResultDto>(
+      `/lab-submissions/${submissionId}/custom-result`,
+      body
+    );
   }
 }
 

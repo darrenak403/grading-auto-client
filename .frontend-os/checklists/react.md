@@ -1,0 +1,5 @@
+- components are focused
+- hooks extracted properly
+- state ownership correct
+- no duplicated logic
+- no unnecessary re-renders

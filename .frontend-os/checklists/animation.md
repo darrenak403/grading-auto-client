@@ -1,0 +1,4 @@
+- no transition: all
+- use transform + opacity
+- animation under 300ms
+- avoid layout animations

@@ -4,13 +4,12 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { siteConfig } from "@/config/site";
-import { Menu, X } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 
 const navItems = siteConfig.navItems;
 
 export function Navbar() {
   const pathname = usePathname();
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   return (
     <header
@@ -19,8 +18,8 @@ export function Navbar() {
         top: 0,
         zIndex: 50,
         width: "100%",
-        backgroundColor: "#fffefb",
-        borderBottom: "1px solid #c5c0b1",
+        backgroundColor: "#ffffff",
+        borderBottom: "1px solid #ebebeb",
       }}
     >
       <div
@@ -35,34 +34,27 @@ export function Navbar() {
         }}
       >
         <Link
-          href="/"
+          href="/dashboard"
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "8px",
+            gap: "12px",
             textDecoration: "none",
           }}
+          className="group"
         >
+          <div className="w-8 h-8 rounded-full bg-[#f97316] flex items-center justify-center text-white shadow-sm shadow-[#f97316]/20 transition-transform duration-200 group-hover:scale-105">
+            <GraduationCap size={18} className="stroke-[2]" />
+          </div>
           <span
             style={{
-              fontSize: "1.5rem",
-              fontWeight: 700,
-              color: "#ff4f00",
-              fontFamily: "Inter, Helvetica, Arial, sans-serif",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            PRN
-          </span>
-          <span
-            style={{
-              fontSize: "1rem",
+              fontSize: "1.125rem",
               fontWeight: 600,
-              color: "#201515",
+              color: "#222222",
               fontFamily: "Inter, Helvetica, Arial, sans-serif",
             }}
           >
-            Auto Grader
+            PRN232 Auto Grader
           </span>
         </Link>
 
@@ -87,27 +79,29 @@ export function Navbar() {
                   fontFamily: "Inter, Helvetica, Arial, sans-serif",
                   fontSize: "1rem",
                   fontWeight: 500,
-                  color: "#201515",
+                  color: isActive ? "#f97316" : "#717171",
                   backgroundColor: "transparent",
                   border: "none",
                   borderRadius: "8px",
                   cursor: "pointer",
                   textDecoration: "none",
                   boxShadow: isActive
-                    ? "rgb(255, 79, 0) 0px -4px 0px 0px inset"
+                    ? "rgb(249, 115, 22) 0px -4px 0px 0px inset"
                     : "transparent 0px -4px 0px 0px inset",
-                  transition: "box-shadow 0.15s ease",
+                  transition: "all 0.15s ease",
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
                     e.currentTarget.style.boxShadow =
-                      "rgb(197, 192, 177) 0px -4px 0px 0px inset";
+                      "rgb(235, 235, 235) 0px -4px 0px 0px inset";
+                    e.currentTarget.style.color = "#222222";
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) {
                     e.currentTarget.style.boxShadow =
                       "transparent 0px -4px 0px 0px inset";
+                    e.currentTarget.style.color = "#717171";
                   }
                 }}
               >
@@ -119,8 +113,6 @@ export function Navbar() {
 
         <div style={{ display: "flex", alignItems: "center" }} />
       </div>
-
-
     </header>
   );
 }

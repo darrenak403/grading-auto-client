@@ -76,6 +76,8 @@ export interface TestCase {
 export interface Participant {
   id: string;
   assignmentId: string;
+  assignmentCode?: string;
+  assignmentTitle?: string;
   username: string;
   studentCode: string;
 }
@@ -92,6 +94,8 @@ export interface Submission {
   createdAt: string;
   totalScore?: number;
   maxScore?: number;
+  gradingRound: string;
+  latestJobStatus?: JobStatus | null;
 }
 
 export interface GradingJob {
@@ -179,14 +183,16 @@ export interface ReviewNote {
 
 export interface ExportJob {
   id: string;
-  assignmentId?: string;
-  assignmentCode?: string;
-  examSessionId?: string;
-  examSessionTitle?: string;
+  labAssignmentId?: string | null;
+  labAssignmentTitle?: string | null;
+  assignmentId?: string | null;
+  assignmentCode?: string | null;
+  examSessionId?: string | null;
+  examSessionTitle?: string | null;
   status: ExportStatus;
-  gradingRound?: string;
-  filePath?: string;
-  errorMessage?: string;
+  gradingRound?: string | null;
+  filePath?: string | null;
+  errorMessage?: string | null;
   createdAt?: string;
 }
 
@@ -244,6 +250,13 @@ export interface AdjustQuestionResultRequest {
   adjustedBy?: string;
 }
 
+export interface ImportCustomSubmissionResultRequest {
+  templateSubmissionId: string;
+  score: number;
+  reason: string;
+  adjustedBy?: string;
+}
+
 export interface UpdateReviewNoteRequest {
   content: string;
   reviewedBy?: string;
@@ -254,6 +267,8 @@ export interface CreateExportRequest {
   gradingRound?: string;
   examSessionId?: string;
 }
+
+export * from "./lab";
 
 // ==================== API Response ====================
 export interface ApiResponse<T> {

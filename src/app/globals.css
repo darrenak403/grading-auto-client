@@ -4,6 +4,7 @@
    ============================================ */
 
 @import "tailwindcss";
+@import "driver.js/dist/driver.css";
 
 /* ============================================
    CSS CUSTOM PROPERTIES (Design Tokens)
@@ -12,19 +13,19 @@
   /* === Color Palette === */
   
   /* Primary Colors */
-  --color-zapier-black: #201515;   /* Primary text, headings */
-  --color-cream: #fffefb;            /* Page background - warm cream */
-  --color-off-white: #fffdf9;        /* Secondary background surface */
+  --color-zapier-black: #222222;   /* Primary text, headings */
+  --color-cream: #ffffff;            /* Page background - pure white */
+  --color-off-white: #fcfcfc;        /* Secondary background surface */
   
   /* Brand Accent */
-  --color-orange: #ff4f00;           /* Primary CTA, active states */
+  --color-orange: #f97316;           /* Primary CTA, active states */
   
   /* Neutral Scale */
-  --color-charcoal: #36342e;         /* Secondary text */
-  --color-warm-gray: #939084;        /* Muted text, labels */
-  --color-sand: #c5c0b1;             /* Primary borders */
-  --color-light-sand: #eceae3;       /* Secondary buttons, surfaces */
-  --color-mid-warm: #b5b2aa;         /* Alternate border tone */
+  --color-charcoal: #3f3f46;         /* Secondary text */
+  --color-warm-gray: #717171;        /* Muted text, labels */
+  --color-sand: #ebebeb;             /* Primary borders */
+  --color-light-sand: #f4f4f5;       /* Secondary buttons, surfaces */
+  --color-mid-warm: #d4d4d8;         /* Alternate border tone */
   
   /* === Semantic Token Mapping (Legacy/Convenience) === */
   --color-text: var(--color-zapier-black);
@@ -66,9 +67,9 @@
   
   /* === Border Radius === */
   --radius-tight: 3px;      /* Small inline spans */
-  --radius-standard: 4px;    /* Orange CTA buttons, tags */
-  --radius-content: 5px;      /* Cards, links, containers */
-  --radius-comfortable: 8px; /* Featured cards, large buttons, tabs */
+  --radius-standard: 12px;    /* Orange CTA buttons, tags */
+  --radius-content: 12px;      /* Cards, links, containers */
+  --radius-comfortable: 12px; /* Featured cards, large buttons, tabs */
   --radius-social: 14px;     /* Social icon buttons */
   --radius-pill: 20px;       /* Play buttons, pill buttons */
   
@@ -485,22 +486,29 @@ body {
   width: 100%;
   background-color: var(--color-cream);
   color: var(--color-text);
-  border: 1px solid var(--color-sand);
+  border: 1px solid var(--color-mid-warm);
   border-radius: var(--radius-content);
-  padding: var(--space-3) var(--space-4);
-  font-family: var(--font-system);
-  font-size: var(--text-button);
+  padding: 10px 14px;
+  font-family: var(--font-primary);
+  font-size: var(--text-button-sm);
+  font-weight: 500;
   line-height: 1.5;
-  transition: border-color 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+}
+
+.input:hover {
+  border-color: #a1a1aa;
 }
 
 .input::placeholder {
-  color: var(--color-warm-gray);
+  color: #a1a1aa;
 }
 
 .input:focus {
   outline: none;
   border-color: var(--color-orange);
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15);
 }
 
 .input:disabled {
@@ -577,6 +585,23 @@ body {
   outline-offset: 2px;
 }
 
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
+/* ============================================
+   CUSTOM UTILITIES
+   ============================================ */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* ============================================
    PRINT STYLES
    ============================================ */
@@ -584,5 +609,86 @@ body {
   body {
     background-color: white;
     color: black;
+  }
+}
+
+/* ============================================
+   PRODUCT TOUR
+   ============================================ */
+.driver-popover.prn232-driver-popover {
+  max-width: 360px;
+  border: 1px solid var(--color-sand);
+  border-radius: var(--radius-standard);
+  padding: var(--space-20);
+  color: var(--color-text);
+  background: var(--color-cream);
+  box-shadow: 0 10px 30px rgba(34, 34, 34, 0.16);
+  font-family: var(--font-primary);
+}
+
+.prn232-driver-popover .driver-popover-title {
+  font-size: 1rem;
+  line-height: 1.4;
+  font-weight: 700;
+  color: var(--color-text);
+  text-wrap: balance;
+}
+
+.prn232-driver-popover .driver-popover-description {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  text-wrap: pretty;
+}
+
+.prn232-driver-popover .driver-popover-progress-text {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.prn232-driver-popover .driver-popover-footer-btn {
+  min-height: 36px;
+  border: 1px solid var(--color-sand);
+  border-radius: 10px;
+  padding: 6px 12px;
+  background: var(--color-cream);
+  color: var(--color-text);
+  font-family: var(--font-primary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-shadow: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.prn232-driver-popover .driver-popover-next-btn,
+.prn232-driver-popover .driver-popover-done-btn {
+  border-color: var(--color-orange);
+  background: var(--color-orange);
+  color: white;
+}
+
+.prn232-driver-popover .driver-popover-footer-btn:hover {
+  border-color: var(--color-mid-warm);
+  background: var(--color-light-sand);
+}
+
+.prn232-driver-popover .driver-popover-next-btn:hover,
+.prn232-driver-popover .driver-popover-done-btn:hover {
+  border-color: #ea580c;
+  background: #ea580c;
+  color: white;
+}
+
+.prn232-driver-popover .driver-popover-close-btn {
+  color: var(--color-text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .driver-overlay-animated,
+  .driver-popover,
+  .driver-active-element {
+    transition: none !important;
   }
 }

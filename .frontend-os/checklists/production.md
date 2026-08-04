@@ -1,0 +1,5 @@
+- responsive checked
+- loading/empty/error states exist
+- accessibility checked
+- performance checked
+- code maintainable
